@@ -10,6 +10,7 @@ import {
 import {
   enrichDiagnostico, generateAnalise, generatePlano, suggestMetricas,
 } from "@/lib/ai-orientacao.functions";
+import logoAsset from "@/assets/logo-orientamais.png.asset.json";
 
 export const Route = createFileRoute("/crm")({
   head: () => ({ meta: [{ title: "CRM — Orientamais" }] }),
