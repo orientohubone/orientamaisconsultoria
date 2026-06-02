@@ -660,8 +660,8 @@ function LeadDrawer({ lead, onClose, onSaved, onDeleted }: { lead: Lead; onClose
   return (
     <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
       <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
-      <aside onClick={(e) => e.stopPropagation()} className="relative w-full max-w-2xl bg-card border-l border-border h-full overflow-y-auto">
-        <div className="p-6 pb-0">
+      <aside onClick={(e) => e.stopPropagation()} className="relative w-full max-w-2xl bg-card border-l border-border h-full flex flex-col">
+        <div className="p-6 pb-0 shrink-0 border-b border-border bg-card">
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="text-xs uppercase tracking-widest text-muted-foreground">Cliente</div>
@@ -684,7 +684,7 @@ function LeadDrawer({ lead, onClose, onSaved, onDeleted }: { lead: Lead; onClose
             <button onClick={onClose} className="p-2 rounded-lg hover:bg-secondary"><X className="h-5 w-5" /></button>
           </div>
         </div>
-        <div className="mt-6 flex gap-1 border-b border-border overflow-x-auto">
+        <div className="mt-6 -mb-px flex gap-1 overflow-x-auto">
           <TabBtn active={tab === "dados"} onClick={() => setTab("dados")} label="Dados" />
           {STAGES.map((s) => (
             <TabBtn key={s.value} active={tab === s.value} onClick={() => setTab(s.value)} label={s.label} icon={<s.icon className="h-3.5 w-3.5" />} />
@@ -692,7 +692,7 @@ function LeadDrawer({ lead, onClose, onSaved, onDeleted }: { lead: Lead; onClose
         </div>
         </div>
 
-        <div className="p-6 space-y-5">
+        <div className="p-6 space-y-5 flex-1 overflow-y-auto">
           {aiError && <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">{aiError}</div>}
 
           {tab === "dados" && (
