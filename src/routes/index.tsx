@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Target, Megaphone, Users, TrendingUp, PieChart, ClipboardCheck, Search, Lightbulb, Rocket, BarChart3, ArrowRight, CheckCircle2, Crosshair, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import fernandoAsset from "@/assets/fernando.jpeg.asset.json";
+import { supabase } from "@/integrations/supabase/client";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -44,15 +46,50 @@ function Logo() {
 
 function Index() {
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [form, setForm] = useState({
+    nome: "",
+    whatsapp: "",
+    tipo_negocio: "",
+    cnpj: "",
+    desafios_reais: "",
+    objetivos_organizacionais: "",
+  });
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    const { error: dbError } = await supabase.from("leads").insert({
+      nome: form.nome.trim(),
+      whatsapp: form.whatsapp.trim(),
+      tipo_negocio: form.tipo_negocio.trim() || null,
+      cnpj: form.cnpj.trim() || null,
+      desafios_reais: form.desafios_reais.trim() || null,
+      objetivos_organizacionais: form.objetivos_organizacionais.trim() || null,
+    });
+    setLoading(false);
+    if (dbError) {
+      setError("Não foi possível enviar agora. Tente novamente.");
+      return;
+    }
+    setSent(true);
+  }
 
   return (
     <div className="min-h-screen text-foreground" style={{ background: "var(--gradient-hero)" }}>
       {/* NAV */}
       <header className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
         <Logo />
-        <a href="#agendar" className="hidden sm:inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition">
-          Quero minha vaga <ArrowRight className="h-4 w-4" />
-        </a>
+        <div className="flex items-center gap-3">
+          <Link to="/crm" className="hidden sm:inline-flex text-xs font-semibold uppercase tracking-widest text-muted-foreground hover:text-primary transition">
+            Painel
+          </Link>
+          <a href="#agendar" className="hidden sm:inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition">
+            Quero minha vaga <ArrowRight className="h-4 w-4" />
+          </a>
+        </div>
       </header>
 
       {/* HERO */}
@@ -184,23 +221,38 @@ function Index() {
               </div>
             ) : (
               <form
-                onSubmit={(e) => { e.preventDefault(); setSent(true); }}
+                onSubmit={handleSubmit}
                 className="rounded-2xl bg-background/60 backdrop-blur border border-border p-6 space-y-4"
               >
                 <div>
                   <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Nome</label>
-                  <input required className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="Seu nome" />
+                  <input required value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="Seu nome" />
                 </div>
                 <div>
                   <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">WhatsApp</label>
-                  <input required type="tel" className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="(00) 00000-0000" />
+                  <input required type="tel" value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="(00) 00000-0000" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Seu negócio</label>
+                    <input value={form.tipo_negocio} onChange={(e) => setForm({ ...form, tipo_negocio: e.target.value })} className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="O que você faz?" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">CNPJ</label>
+                    <input value={form.cnpj} onChange={(e) => setForm({ ...form, cnpj: e.target.value })} className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="Opcional" />
+                  </div>
                 </div>
                 <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Seu negócio</label>
-                  <input className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="O que você faz?" />
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Desafios reais</label>
+                  <textarea rows={2} value={form.desafios_reais} onChange={(e) => setForm({ ...form, desafios_reais: e.target.value })} className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none resize-none" placeholder="O que mais te trava hoje?" />
                 </div>
-                <button type="submit" className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground font-bold py-3.5 hover:opacity-90 transition">
-                  Garantir minha vaga <ArrowRight className="h-5 w-5" />
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Objetivos</label>
+                  <textarea rows={2} value={form.objetivos_organizacionais} onChange={(e) => setForm({ ...form, objetivos_organizacionais: e.target.value })} className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none resize-none" placeholder="Onde você quer chegar?" />
+                </div>
+                {error && <p className="text-xs text-destructive">{error}</p>}
+                <button disabled={loading} type="submit" className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground font-bold py-3.5 hover:opacity-90 transition disabled:opacity-60">
+                  {loading ? "Enviando..." : <>Garantir minha vaga <ArrowRight className="h-5 w-5" /></>}
                 </button>
               </form>
             )}
