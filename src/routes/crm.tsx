@@ -600,9 +600,9 @@ function Input({ value, onChange }: { value: string; onChange: (v: string) => vo
   );
 }
 
-function Textarea({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function Textarea({ value, onChange, rows = 3 }: { value: string; onChange: (v: string) => void; rows?: number }) {
   return (
-    <textarea value={value} onChange={(e) => onChange(e.target.value)} rows={3}
+    <textarea value={value} onChange={(e) => onChange(e.target.value)} rows={rows}
       className="w-full rounded-lg bg-input border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none resize-none" />
   );
 }
