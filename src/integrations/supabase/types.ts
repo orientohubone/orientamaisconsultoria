@@ -16,39 +16,60 @@ export type Database = {
     Tables: {
       leads: {
         Row: {
+          analise_ai: string | null
           anotacoes: string | null
           cnpj: string | null
           created_at: string
           desafios_reais: string | null
+          diagnostico_ai: string | null
+          execucao_notas: string | null
           id: string
           nome: string
           objetivos_organizacionais: string | null
+          oportunidades: Json
+          plano_acoes: Json
+          resultados_metricas: Json
+          resultados_notas: string | null
           stage: Database["public"]["Enums"]["lead_stage"]
           tipo_negocio: string | null
           updated_at: string
           whatsapp: string
         }
         Insert: {
+          analise_ai?: string | null
           anotacoes?: string | null
           cnpj?: string | null
           created_at?: string
           desafios_reais?: string | null
+          diagnostico_ai?: string | null
+          execucao_notas?: string | null
           id?: string
           nome: string
           objetivos_organizacionais?: string | null
+          oportunidades?: Json
+          plano_acoes?: Json
+          resultados_metricas?: Json
+          resultados_notas?: string | null
           stage?: Database["public"]["Enums"]["lead_stage"]
           tipo_negocio?: string | null
           updated_at?: string
           whatsapp: string
         }
         Update: {
+          analise_ai?: string | null
           anotacoes?: string | null
           cnpj?: string | null
           created_at?: string
           desafios_reais?: string | null
+          diagnostico_ai?: string | null
+          execucao_notas?: string | null
           id?: string
           nome?: string
           objetivos_organizacionais?: string | null
+          oportunidades?: Json
+          plano_acoes?: Json
+          resultados_metricas?: Json
+          resultados_notas?: string | null
           stage?: Database["public"]["Enums"]["lead_stage"]
           tipo_negocio?: string | null
           updated_at?: string
