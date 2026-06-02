@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Target, Megaphone, Users, TrendingUp, PieChart, ClipboardCheck, Search, Lightbulb, Rocket, BarChart3, ArrowRight, CheckCircle2, Crosshair, ChevronRight } from "lucide-react";
 import { useState } from "react";
-import fernandoAsset from "@/assets/fernando.jpeg.asset.json";
-import logoAsset from "@/assets/logo-orientamais.png.asset.json";
+import fernandoUrl from "@/assets/fernando.jpeg";
+import logoUrl from "@/assets/logo orientamais.png";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "@tanstack/react-router";
 
@@ -36,7 +36,7 @@ const etapas = [
 
 function Logo() {
   return (
-    <img src={logoAsset.url} alt="Orientamais" className="h-10 w-auto" />
+    <img src={logoUrl} alt="Orientamais" className="h-10 w-auto" />
   );
 }
 
@@ -129,7 +129,7 @@ function Index() {
         <div className="relative">
           <div className="absolute -inset-4 bg-primary/20 blur-3xl rounded-full" />
           <div className="relative rounded-3xl overflow-hidden border border-primary/30" style={{ boxShadow: "var(--shadow-card)" }}>
-            <img src={fernandoAsset.url} alt="Fernando Ramalho — Consultor Orientamais" className="w-full h-auto object-cover" />
+            <img src={fernandoUrl} alt="Fernando Ramalho — Consultor Orientamais" className="w-full h-auto object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-6">
               <div className="text-xs uppercase tracking-widest text-primary font-bold">Seu consultor</div>

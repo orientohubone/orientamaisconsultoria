@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight } from "lucide-react";
-import logoAsset from "@/assets/logo-orientamais.png.asset.json";
+import logoUrl from "@/assets/logo orientamais.png";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Entrar — Orientamais CRM" }] }),
@@ -50,7 +50,7 @@ function LoginPage() {
     <div className="min-h-screen flex items-center justify-center px-6" style={{ background: "var(--gradient-hero)" }}>
       <div className="w-full max-w-md rounded-3xl border border-primary/30 bg-card/80 backdrop-blur p-8" style={{ boxShadow: "var(--shadow-glow)" }}>
         <Link to="/" className="text-xs uppercase tracking-widest text-muted-foreground hover:text-primary">← voltar</Link>
-        <img src={logoAsset.url} alt="Orientamais" className="mt-4 h-10 w-auto" />
+        <img src={logoUrl} alt="Orientamais" className="mt-4 h-10 w-auto" />
         <h1 className="mt-4 text-3xl font-bold">
           {mode === "signin" ? "Entrar no painel" : "Criar conta"}
         </h1>
