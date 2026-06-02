@@ -7,7 +7,6 @@ import {
   Trash2, Phone, Building2, Filter, Sparkles, FileDown, Loader2, Plus,
   Check, Target, TrendingUp,
 } from "lucide-react";
-import jsPDF from "jspdf";
 import {
   enrichDiagnostico, generateAnalise, generatePlano, suggestMetricas,
 } from "@/lib/ai-orientacao.functions";
@@ -295,7 +294,8 @@ function LeadDrawer({ lead, onClose, onSaved, onDeleted }: { lead: Lead; onClose
     finally { setAiLoading(null); }
   }
 
-  function exportPDF() {
+  async function exportPDF() {
+    const { default: jsPDF } = await import("jspdf");
     const doc = new jsPDF({ unit: "pt", format: "a4" });
     const W = doc.internal.pageSize.getWidth();
     const M = 48;
