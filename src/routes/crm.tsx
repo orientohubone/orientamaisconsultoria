@@ -10,9 +10,10 @@ import {
 import {
   enrichDiagnostico, generateAnalise, generatePlano, suggestMetricas,
 } from "@/lib/ai-orientacao.functions";
+import logoAsset from "@/assets/logo-orientamais.png.asset.json";
 
 export const Route = createFileRoute("/crm")({
-  head: () => ({ meta: [{ title: "CRM — OrientoHub" }] }),
+  head: () => ({ meta: [{ title: "CRM — Orientamais" }] }),
   component: CrmPage,
 });
 
@@ -130,9 +131,9 @@ function CrmPage() {
     <div className="min-h-screen" style={{ background: "var(--gradient-hero)" }}>
       <header className="border-b border-border/40 bg-background/40 backdrop-blur sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="flex flex-col leading-none">
-            <div className="text-xl font-bold tracking-tight">oriento<span className="text-primary">hub</span></div>
-            <div className="text-[0.55rem] tracking-[0.3em] text-muted-foreground mt-0.5">CRM · GESTÃO DE CLIENTES</div>
+          <Link to="/" className="flex items-center gap-3">
+            <img src={logoAsset.url} alt="Orientamais" className="h-9 w-auto" />
+            <span className="text-[0.55rem] tracking-[0.3em] text-muted-foreground">CRM · GESTÃO DE CLIENTES</span>
           </Link>
           <button onClick={handleLogout} className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground hover:text-primary">
             <LogOut className="h-4 w-4" /> Sair

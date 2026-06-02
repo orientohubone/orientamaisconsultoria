@@ -2,15 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Target, Megaphone, Users, TrendingUp, PieChart, ClipboardCheck, Search, Lightbulb, Rocket, BarChart3, ArrowRight, CheckCircle2, Crosshair, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import fernandoAsset from "@/assets/fernando.jpeg.asset.json";
+import logoAsset from "@/assets/logo-orientamais.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "OrientoHub — Orientação Gratuita para Empreendedores" },
+      { title: "Orientamais — Orientação Gratuita para Empreendedores" },
       { name: "description", content: "Sessão de orientação gratuita: clareza, estratégia e direção para o seu negócio crescer com método. Garanta sua vaga." },
-      { property: "og:title", content: "OrientoHub — Orientação Gratuita para Empreendedores" },
+      { property: "og:title", content: "Orientamais — Orientação Gratuita para Empreendedores" },
       { property: "og:description", content: "Sessão de orientação gratuita: clareza, estratégia e direção para o seu negócio crescer." },
     ],
   }),
@@ -35,12 +36,7 @@ const etapas = [
 
 function Logo() {
   return (
-    <div className="flex flex-col leading-none">
-      <div className="text-2xl font-bold tracking-tight">
-        oriento<span className="text-primary">hub</span>
-      </div>
-      <div className="text-[0.6rem] tracking-[0.3em] text-muted-foreground mt-1">SOLUÇÕES EMPRESARIAIS</div>
-    </div>
+    <img src={logoAsset.url} alt="Orientamais" className="h-10 w-auto" />
   );
 }
 
@@ -133,7 +129,7 @@ function Index() {
         <div className="relative">
           <div className="absolute -inset-4 bg-primary/20 blur-3xl rounded-full" />
           <div className="relative rounded-3xl overflow-hidden border border-primary/30" style={{ boxShadow: "var(--shadow-card)" }}>
-            <img src={fernandoAsset.url} alt="Fernando Ramalho — Consultor OrientoHub" className="w-full h-auto object-cover" />
+            <img src={fernandoAsset.url} alt="Fernando Ramalho — Consultor Orientamais" className="w-full h-auto object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-6">
               <div className="text-xs uppercase tracking-widest text-primary font-bold">Seu consultor</div>
@@ -263,7 +259,7 @@ function Index() {
       <footer className="border-t border-border/40 mt-10">
         <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <Logo />
-          <div className="text-xs text-muted-foreground">© {new Date().getFullYear()} OrientoHub. Todos os direitos reservados.</div>
+          <div className="text-xs text-muted-foreground">© {new Date().getFullYear()} Orientamais. Todos os direitos reservados.</div>
         </div>
       </footer>
     </div>
