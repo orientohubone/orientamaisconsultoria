@@ -298,50 +298,360 @@ function LeadDrawer({ lead, onClose, onSaved, onDeleted }: { lead: Lead; onClose
     const { default: jsPDF } = await import("jspdf");
     const doc = new jsPDF({ unit: "pt", format: "a4" });
     const W = doc.internal.pageSize.getWidth();
+    const H = doc.internal.pageSize.getHeight();
     const M = 48;
+    const CONTENT_W = W - M * 2;
+
+    // Brand palette
+    const C = {
+      primary: [16, 120, 80] as [number, number, number],
+      primaryDark: [10, 70, 50] as [number, number, number],
+      ink: [25, 35, 30] as [number, number, number],
+      sub: [110, 115, 112] as [number, number, number],
+      soft: [240, 246, 242] as [number, number, number],
+      border: [220, 225, 222] as [number, number, number],
+      accent: [200, 160, 60] as [number, number, number],
+    };
+    const impactColor = (i: string): [number, number, number] =>
+      i === "alto" ? [190, 60, 60] : i === "medio" ? [200, 140, 50] : [70, 130, 90];
+    const prioColor = (p: string): [number, number, number] =>
+      p === "alta" ? [190, 60, 60] : p === "media" ? [200, 140, 50] : [70, 130, 90];
+
     let y = M;
-    const line = (txt: string, size = 11, bold = false, color: [number, number, number] = [30, 30, 30]) => {
+    let pageNum = 0;
+    const TOP = 90;
+    const BOTTOM = H - 60;
+
+    const fill = (rgb: [number, number, number]) => doc.setFillColor(rgb[0], rgb[1], rgb[2]);
+    const stroke = (rgb: [number, number, number]) => doc.setDrawColor(rgb[0], rgb[1], rgb[2]);
+    const ink = (rgb: [number, number, number]) => doc.setTextColor(rgb[0], rgb[1], rgb[2]);
+    const setFont = (size: number, bold = false) => {
       doc.setFont("helvetica", bold ? "bold" : "normal");
       doc.setFontSize(size);
-      doc.setTextColor(color[0], color[1], color[2]);
-      const lines = doc.splitTextToSize(txt, W - M * 2);
+    };
+
+    const drawHeader = () => {
+      fill(C.primary);
+      doc.rect(0, 0, W, 56, "F");
+      fill(C.accent);
+      doc.rect(0, 56, W, 3, "F");
+      ink([255, 255, 255]);
+      setFont(13, true);
+      doc.text("orientohub", M, 34);
+      setFont(9, false);
+      ink([220, 240, 230]);
+      doc.text("Plano de Orientação Estratégica", M, 47);
+      setFont(9, false);
+      ink([220, 240, 230]);
+      doc.text(
+        new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }),
+        W - M,
+        40,
+        { align: "right" },
+      );
+    };
+    const drawFooter = () => {
+      stroke(C.border);
+      doc.line(M, H - 40, W - M, H - 40);
+      setFont(8, false);
+      ink(C.sub);
+      doc.text("orientohub · consultoria estratégica para empreendedores", M, H - 26);
+      doc.text(`${pageNum}`, W - M, H - 26, { align: "right" });
+    };
+    const newPage = (firstPage = false) => {
+      if (!firstPage) doc.addPage();
+      pageNum++;
+      drawHeader();
+      drawFooter();
+      y = TOP;
+    };
+    const ensure = (need: number) => {
+      if (y + need > BOTTOM) newPage();
+    };
+
+    // Markdown-aware paragraph renderer
+    const stripMd = (s: string) =>
+      s.replace(/\*\*(.+?)\*\*/g, "$1").replace(/`([^`]+)`/g, "$1").replace(/^#+\s*/gm, "");
+    const paragraph = (txt: string, opts: { size?: number; bold?: boolean; color?: [number, number, number]; lh?: number; indent?: number } = {}) => {
+      const size = opts.size ?? 10.5;
+      const lh = opts.lh ?? size + 4;
+      const indent = opts.indent ?? 0;
+      setFont(size, opts.bold);
+      ink(opts.color ?? C.ink);
+      const lines = doc.splitTextToSize(stripMd(txt), CONTENT_W - indent);
       lines.forEach((ln: string) => {
-        if (y > 780) { doc.addPage(); y = M; }
-        doc.text(ln, M, y);
-        y += size + 4;
+        ensure(lh);
+        doc.text(ln, M + indent, y);
+        y += lh;
       });
     };
-    const hr = () => { y += 6; doc.setDrawColor(200); doc.line(M, y, W - M, y); y += 12; };
-    const h1 = (t: string) => { y += 10; line(t, 18, true, [20, 90, 50]); };
-    const h2 = (t: string) => { y += 4; line(t, 13, true, [30, 60, 40]); };
-    line("OrientoHub", 22, true, [20, 90, 50]);
-    line("Plano de Orientação Estratégica", 11, false, [120, 120, 120]);
-    hr();
-    h2("Cliente");
-    line(draft.nome, 12, true);
-    line(`WhatsApp: ${draft.whatsapp}`);
-    if (draft.tipo_negocio) line(`Negócio: ${draft.tipo_negocio}`);
-    if (draft.cnpj) line(`CNPJ: ${draft.cnpj}`);
-    if (draft.diagnostico_ai) { h1("1. Diagnóstico"); line(draft.diagnostico_ai); }
-    if (draft.analise_ai) { h1("2. Análise"); line(draft.analise_ai); }
+    const renderMarkdown = (md: string) => {
+      const blocks = md.split(/\n\s*\n/);
+      blocks.forEach((block) => {
+        const lines = block.split("\n").map((l) => l.trim()).filter(Boolean);
+        lines.forEach((ln) => {
+          if (/^#{1,2}\s/.test(ln)) {
+            y += 4;
+            paragraph(ln.replace(/^#+\s*/, ""), { size: 12, bold: true, color: C.primaryDark });
+          } else if (/^#{3,}\s/.test(ln)) {
+            paragraph(ln.replace(/^#+\s*/, ""), { size: 11, bold: true, color: C.ink });
+          } else if (/^[-*•]\s/.test(ln)) {
+            const txt = ln.replace(/^[-*•]\s/, "");
+            ensure(14);
+            fill(C.primary);
+            doc.circle(M + 3, y - 3, 1.6, "F");
+            paragraph(txt, { indent: 14 });
+          } else if (/^\d+\.\s/.test(ln)) {
+            paragraph(ln, { indent: 6 });
+          } else {
+            paragraph(ln);
+          }
+        });
+        y += 4;
+      });
+    };
+
+    const sectionTitle = (num: number, title: string) => {
+      ensure(60);
+      y += 10;
+      fill(C.primary);
+      doc.roundedRect(M, y - 14, 26, 26, 4, 4, "F");
+      ink([255, 255, 255]);
+      setFont(13, true);
+      doc.text(String(num), M + 13, y + 4, { align: "center" });
+      ink(C.primaryDark);
+      setFont(15, true);
+      doc.text(title, M + 38, y + 4);
+      stroke(C.border);
+      doc.line(M, y + 18, W - M, y + 18);
+      y += 34;
+    };
+
+    const badge = (text: string, x: number, yy: number, color: [number, number, number]) => {
+      setFont(8, true);
+      const tw = doc.getTextWidth(text) + 14;
+      fill([color[0], color[1], color[2]]);
+      doc.setGState(new (doc as any).GState({ opacity: 0.15 }));
+      doc.roundedRect(x, yy - 9, tw, 14, 7, 7, "F");
+      doc.setGState(new (doc as any).GState({ opacity: 1 }));
+      ink(color);
+      doc.text(text.toUpperCase(), x + 7, yy + 1);
+      return tw;
+    };
+
+    // ===== COVER =====
+    newPage(true);
+    // Big hero block
+    fill(C.soft);
+    doc.roundedRect(M, y, CONTENT_W, 220, 10, 10, "F");
+    ink(C.sub);
+    setFont(9, true);
+    doc.text("PLANO PERSONALIZADO PARA", M + 24, y + 32);
+    ink(C.primaryDark);
+    setFont(26, true);
+    const nameLines = doc.splitTextToSize(draft.nome, CONTENT_W - 48);
+    let ny = y + 64;
+    nameLines.slice(0, 2).forEach((ln: string) => { doc.text(ln, M + 24, ny); ny += 30; });
+    if (draft.tipo_negocio) {
+      ink(C.sub);
+      setFont(11, false);
+      doc.text(draft.tipo_negocio, M + 24, ny + 6);
+    }
+    // chips row
+    let cy = y + 170;
+    ink(C.sub);
+    setFont(9, true);
+    doc.text("CONTATO", M + 24, cy);
+    ink(C.ink);
+    setFont(11, true);
+    doc.text(draft.whatsapp, M + 24, cy + 16);
+    if (draft.cnpj) {
+      ink(C.sub); setFont(9, true);
+      doc.text("CNPJ", M + 220, cy);
+      ink(C.ink); setFont(11, true);
+      doc.text(draft.cnpj, M + 220, cy + 16);
+    }
+    y += 240;
+
+    // Sumário
+    ensure(180);
+    ink(C.primaryDark);
+    setFont(11, true);
+    doc.text("SUMÁRIO", M, y);
+    stroke(C.primary);
+    doc.setLineWidth(1.2);
+    doc.line(M, y + 6, M + 60, y + 6);
+    doc.setLineWidth(0.5);
+    y += 22;
+    const toc: Array<{ n: number; t: string; on: boolean }> = [
+      { n: 1, t: "Diagnóstico estratégico", on: !!draft.diagnostico_ai },
+      { n: 2, t: "Análise detalhada", on: !!draft.analise_ai },
+      { n: 3, t: "Oportunidades priorizadas", on: (draft.oportunidades ?? []).some((o) => o.selecionada) },
+      { n: 4, t: "Plano de ação", on: (draft.plano_acoes ?? []).length > 0 },
+      { n: 5, t: "Métricas de acompanhamento", on: (draft.resultados_metricas ?? []).length > 0 },
+    ];
+    toc.forEach((it) => {
+      ink(it.on ? C.ink : [180, 185, 182]);
+      setFont(10.5, false);
+      doc.text(`${String(it.n).padStart(2, "0")}   ${it.t}`, M, y);
+      setFont(8, true);
+      ink(it.on ? C.primary : [200, 205, 202]);
+      doc.text(it.on ? "INCLUSO" : "—", W - M, y, { align: "right" });
+      y += 18;
+    });
+
+    // Contexto inicial (form data)
+    if (draft.desafios_reais || draft.objetivos_organizacionais) {
+      ensure(120);
+      y += 18;
+      ink(C.primaryDark);
+      setFont(11, true);
+      doc.text("CONTEXTO INFORMADO", M, y);
+      stroke(C.primary);
+      doc.setLineWidth(1.2);
+      doc.line(M, y + 6, M + 110, y + 6);
+      doc.setLineWidth(0.5);
+      y += 18;
+      if (draft.desafios_reais) {
+        paragraph("Desafios reais", { size: 9.5, bold: true, color: C.sub });
+        paragraph(draft.desafios_reais);
+        y += 4;
+      }
+      if (draft.objetivos_organizacionais) {
+        paragraph("Objetivos organizacionais", { size: 9.5, bold: true, color: C.sub });
+        paragraph(draft.objetivos_organizacionais);
+      }
+    }
+
+    // ===== 1. DIAGNÓSTICO =====
+    if (draft.diagnostico_ai) {
+      sectionTitle(1, "Diagnóstico estratégico");
+      renderMarkdown(draft.diagnostico_ai);
+    }
+    // ===== 2. ANÁLISE =====
+    if (draft.analise_ai) {
+      sectionTitle(2, "Análise detalhada");
+      renderMarkdown(draft.analise_ai);
+    }
+    // ===== 3. OPORTUNIDADES =====
     const opSel = (draft.oportunidades ?? []).filter((o) => o.selecionada);
     if (opSel.length) {
-      h1("3. Oportunidades priorizadas");
-      opSel.forEach((o, i) => { h2(`${i + 1}. ${o.titulo} · impacto ${o.impacto}`); line(o.descricao); });
-    }
-    if ((draft.plano_acoes ?? []).length) {
-      h1("4. Plano de Ação");
-      draft.plano_acoes.forEach((a, i) => {
-        h2(`${i + 1}. ${a.titulo}`);
-        line(`Prazo: ${a.prazo}  ·  Responsável: ${a.responsavel}  ·  Prioridade: ${a.prioridade}`, 10, false, [110, 110, 110]);
-        line(a.descricao);
+      sectionTitle(3, "Oportunidades priorizadas");
+      opSel.forEach((o, i) => {
+        ensure(70);
+        const startY = y;
+        // Card
+        fill([255, 255, 255]);
+        stroke(C.border);
+        doc.roundedRect(M, startY - 4, CONTENT_W, 0, 6, 6, "S"); // placeholder
+        // Number bubble
+        fill(C.soft);
+        doc.roundedRect(M + 8, startY + 2, 22, 22, 4, 4, "F");
+        ink(C.primaryDark);
+        setFont(11, true);
+        doc.text(String(i + 1).padStart(2, "0"), M + 19, startY + 17, { align: "center" });
+        // Title
+        ink(C.ink);
+        setFont(12, true);
+        const tLines = doc.splitTextToSize(o.titulo, CONTENT_W - 60 - 70);
+        doc.text(tLines, M + 38, startY + 12);
+        // Impact badge
+        badge(`impacto ${o.impacto}`, W - M - 90, startY + 12, impactColor(o.impacto));
+        y = startY + 12 + tLines.length * 14 + 6;
+        // Description
+        paragraph(o.descricao, { indent: 38, size: 10, color: C.ink });
+        const endY = y + 6;
+        // Draw card border around
+        stroke(C.border);
+        doc.roundedRect(M, startY - 4, CONTENT_W, endY - startY + 4, 6, 6, "S");
+        y = endY + 10;
       });
     }
-    if ((draft.resultados_metricas ?? []).length) {
-      h1("5. Métricas de acompanhamento");
-      draft.resultados_metricas.forEach((m) => line(`• ${m.nome} (${m.unidade}) — meta ${m.meta} · ${m.frequencia}`));
+    // ===== 4. PLANO DE AÇÃO =====
+    if ((draft.plano_acoes ?? []).length) {
+      sectionTitle(4, "Plano de ação");
+      draft.plano_acoes.forEach((a, i) => {
+        ensure(90);
+        const startY = y;
+        // Left accent bar
+        fill(C.primary);
+        doc.rect(M, startY, 3, 60, "F");
+        // Header line
+        ink(C.primaryDark);
+        setFont(9, true);
+        doc.text(`AÇÃO ${String(i + 1).padStart(2, "0")}`, M + 14, startY + 10);
+        // Priority badge top-right
+        badge(`prioridade ${a.prioridade}`, W - M - 100, startY + 10, prioColor(a.prioridade));
+        // Title
+        ink(C.ink);
+        setFont(12, true);
+        const tLines = doc.splitTextToSize(a.titulo, CONTENT_W - 28);
+        let ty = startY + 26;
+        tLines.forEach((ln: string) => { doc.text(ln, M + 14, ty); ty += 15; });
+        y = ty + 4;
+        // Meta row
+        ink(C.sub);
+        setFont(9, false);
+        doc.text(`Prazo: ${a.prazo}   ·   Responsável: ${a.responsavel}`, M + 14, y);
+        y += 14;
+        // Description
+        paragraph(a.descricao, { indent: 14, size: 10 });
+        y += 10;
+      });
     }
-    doc.save(`orientohub-${draft.nome.replace(/\s+/g, "-").toLowerCase()}.pdf`);
+    // ===== 5. MÉTRICAS =====
+    if ((draft.resultados_metricas ?? []).length) {
+      sectionTitle(5, "Métricas de acompanhamento");
+      // Table header
+      ensure(40);
+      fill(C.primary);
+      doc.rect(M, y - 12, CONTENT_W, 22, "F");
+      ink([255, 255, 255]);
+      setFont(9, true);
+      doc.text("MÉTRICA", M + 10, y + 2);
+      doc.text("UNIDADE", M + 220, y + 2);
+      doc.text("FREQUÊNCIA", M + 310, y + 2);
+      doc.text("META", W - M - 10, y + 2, { align: "right" });
+      y += 18;
+      draft.resultados_metricas.forEach((m, i) => {
+        ensure(24);
+        if (i % 2 === 0) {
+          fill(C.soft);
+          doc.rect(M, y - 12, CONTENT_W, 22, "F");
+        }
+        ink(C.ink);
+        setFont(10, true);
+        const nm = doc.splitTextToSize(m.nome, 200);
+        doc.text(nm[0] ?? m.nome, M + 10, y + 2);
+        setFont(9.5, false);
+        ink(C.sub);
+        doc.text(m.unidade ?? "—", M + 220, y + 2);
+        doc.text(m.frequencia ?? "—", M + 310, y + 2);
+        ink(C.primaryDark);
+        setFont(10, true);
+        doc.text(m.meta ?? "—", W - M - 10, y + 2, { align: "right" });
+        y += 22;
+      });
+    }
+
+    // Closing page
+    ensure(120);
+    y += 30;
+    fill(C.soft);
+    doc.roundedRect(M, y, CONTENT_W, 110, 10, 10, "F");
+    ink(C.primaryDark);
+    setFont(14, true);
+    doc.text("Próximo passo", M + 24, y + 32);
+    ink(C.ink);
+    setFont(10.5, false);
+    const closing = doc.splitTextToSize(
+      "Este plano é o seu guia. Execute as ações priorizadas, acompanhe as métricas e ajuste com base nos resultados. A orientohub está com você em cada etapa.",
+      CONTENT_W - 48,
+    );
+    let yy = y + 54;
+    closing.forEach((ln: string) => { doc.text(ln, M + 24, yy); yy += 14; });
+
+    doc.save(`orientohub-plano-${draft.nome.replace(/\s+/g, "-").toLowerCase()}.pdf`);
   }
 
   const waLink = `https://wa.me/${draft.whatsapp.replace(/\D/g, "")}`;
