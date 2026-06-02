@@ -129,7 +129,7 @@ function Index() {
         <div className="relative">
           <div className="absolute -inset-4 bg-primary/20 blur-3xl rounded-full" />
           <div className="relative rounded-3xl overflow-hidden border border-primary/30" style={{ boxShadow: "var(--shadow-card)" }}>
-            <img src={fernandoAsset.url} alt="Fernando Ramalho — Consultor OrientoHub" className="w-full h-auto object-cover" />
+            <img src={fernandoAsset.url} alt="Fernando Ramalho — Consultor Orientamais" className="w-full h-auto object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-6">
               <div className="text-xs uppercase tracking-widest text-primary font-bold">Seu consultor</div>
@@ -259,7 +259,7 @@ function Index() {
       <footer className="border-t border-border/40 mt-10">
         <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <Logo />
-          <div className="text-xs text-muted-foreground">© {new Date().getFullYear()} OrientoHub. Todos os direitos reservados.</div>
+          <div className="text-xs text-muted-foreground">© {new Date().getFullYear()} Orientamais. Todos os direitos reservados.</div>
         </div>
       </footer>
     </div>
