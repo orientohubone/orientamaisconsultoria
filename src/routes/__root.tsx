@@ -78,14 +78,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "Orientomais Consultoria | Fernando Ramalho" },
+      { name: "description", content: "Programa de orientação empresarial gratuita, orientação que gera clareza. Decisão que gera resultado." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "Orientomais Consultoria | Fernando Ramalho" },
+      { property: "og:description", content: "Programa de orientação empresarial gratuita, orientação que gera clareza. Decisão que gera resultado." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Orientomais Consultoria | Fernando Ramalho" },
+      { name: "twitter:description", content: "Programa de orientação empresarial gratuita, orientação que gera clareza. Decisão que gera resultado." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/cc572aff-7623-4d4a-bd85-237f8839caa4/id-preview-3cbdefbb--81072e71-b3a3-4e83-bbc1-78072d59c1e9.lovable.app-1780419643921.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/cc572aff-7623-4d4a-bd85-237f8839caa4/id-preview-3cbdefbb--81072e71-b3a3-4e83-bbc1-78072d59c1e9.lovable.app-1780419643921.png" },
     ],
     links: [
       {
