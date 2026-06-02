@@ -1,7 +1,16 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, useCallback } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { ClipboardCheck, Search, Lightbulb, Rocket, BarChart3, LogOut, X, Save, Trash2, Phone, Building2, Filter } from "lucide-react";
+import {
+  ClipboardCheck, Search, Lightbulb, Rocket, BarChart3, LogOut, X, Save,
+  Trash2, Phone, Building2, Filter, Sparkles, FileDown, Loader2, Plus,
+  Check, Target, TrendingUp,
+} from "lucide-react";
+import jsPDF from "jspdf";
+import {
+  enrichDiagnostico, generateAnalise, generatePlano, suggestMetricas,
+} from "@/lib/ai-orientacao.functions";
 
 export const Route = createFileRoute("/crm")({
   head: () => ({ meta: [{ title: "CRM — OrientoHub" }] }),
@@ -22,7 +31,18 @@ type Lead = {
   stage: Stage;
   created_at: string;
   updated_at: string;
+  diagnostico_ai: string | null;
+  analise_ai: string | null;
+  oportunidades: Oportunidade[];
+  plano_acoes: Acao[];
+  execucao_notas: string | null;
+  resultados_metricas: Metrica[];
+  resultados_notas: string | null;
 };
+
+type Oportunidade = { titulo: string; descricao: string; impacto: string; selecionada?: boolean };
+type Acao = { titulo: string; descricao: string; prazo: string; responsavel: string; prioridade: string; concluida?: boolean };
+type Metrica = { nome: string; unidade: string; frequencia: string; meta: string; valor_atual: string };
 
 const STAGES: { value: Stage; label: string; icon: typeof ClipboardCheck }[] = [
   { value: "diagnostico", label: "Diagnóstico", icon: ClipboardCheck },
