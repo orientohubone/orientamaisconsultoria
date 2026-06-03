@@ -2,8 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const MODEL = "google/gemini-3-flash-preview";
+// Endpoint OpenAI-compatível do Google Gemini — funciona em qualquer host (Vercel, etc.)
+const GATEWAY = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+const MODEL = "gemini-2.5-flash";
 
 type Lead = {
   id: string;
@@ -21,15 +22,16 @@ type Lead = {
 };
 
 async function callAI(body: Record<string, unknown>) {
-  const key = process.env.LOVABLE_API_KEY;
-  if (!key) throw new Error("LOVABLE_API_KEY não configurada");
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error("GEMINI_API_KEY não configurada");
   const res = await fetch(GATEWAY, {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify({ model: MODEL, ...body }),
   });
-  if (res.status === 429) throw new Error("Limite de uso da IA atingido. Tente em instantes.");
-  if (res.status === 402) throw new Error("Créditos da IA esgotados. Adicione créditos no workspace.");
+  if (res.status === 429) throw new Error("Limite de uso da IA do Gemini atingido. Tente em instantes.");
+  if (res.status === 401 || res.status === 403)
+    throw new Error("GEMINI_API_KEY inválida ou sem permissão.");
   if (!res.ok) throw new Error(`Erro da IA: ${res.status} ${await res.text()}`);
   return res.json();
 }
