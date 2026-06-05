@@ -65,7 +65,7 @@ export async function generateOrientamaisPlanoPdf({ draft, logoUrl }: GeneratePd
     soft: [246, 244, 239],
     paper: [255, 255, 253],
     border: [226, 229, 223],
-    accent: [190, 151, 64],
+    accent: [179, 206, 53],
     red: [188, 74, 64],
     amber: [204, 146, 64],
     green: [89, 122, 95],
@@ -151,9 +151,9 @@ export async function generateOrientamaisPlanoPdf({ draft, logoUrl }: GeneratePd
   const addCoverBackground = () => {
     fill([250, 249, 245]);
     doc.rect(0, 0, W, H, "F");
-    fill([236, 233, 224]);
+    fill([229, 239, 222]);
     doc.circle(W - 78, 76, 48, "F");
-    fill([242, 236, 218]);
+    fill([238, 246, 226]);
     doc.circle(62, H - 70, 54, "F");
     fill(C.primary);
     doc.rect(0, 0, W, 10, "F");
