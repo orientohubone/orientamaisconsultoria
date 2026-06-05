@@ -10,7 +10,9 @@ import {
 import {
   enrichDiagnostico, generateAnalise, generatePlano, suggestMetricas,
 } from "@/lib/ai-orientacao.functions";
-import logoUrl from "@/assets/logo orientamais.png";
+import { generateOrientamaisPlanoPdf } from "@/lib/pdf/orientamais-plano-pdf";
+import logoUrl from "@/assets/orientamaislogo.png";
+import reportLogoUrl from "@/assets/logo orientamais.png";
 
 export const Route = createFileRoute("/crm")({
   head: () => ({ meta: [{ title: "CRM — Orientamais" }] }),
@@ -51,6 +53,63 @@ const STAGES: { value: Stage; label: string; icon: typeof ClipboardCheck }[] = [
   { value: "execucao", label: "Execução", icon: Rocket },
   { value: "resultados", label: "Resultados", icon: BarChart3 },
 ];
+
+type Impacto = "alto" | "medio" | "baixo" | string;
+type Prioridade = "alta" | "media" | "baixa" | string;
+
+const IMPACTO_STYLES: Record<string, { badge: string; label: string }> = {
+  alto: {
+    badge: "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300",
+    label: "alto",
+  },
+  medio: {
+    badge: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+    label: "médio",
+  },
+  baixo: {
+    badge: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+    label: "baixo",
+  },
+  default: {
+    badge: "border-slate-500/30 bg-slate-500/10 text-slate-700 dark:text-slate-300",
+    label: "não classificado",
+  },
+};
+
+function normalizeImpacto(impacto: Impacto) {
+  return String(impacto ?? "").trim().toLowerCase().replace(/[^\w-]/g, "");
+}
+
+function getImpactoStyles(impacto: Impacto) {
+  return IMPACTO_STYLES[normalizeImpacto(impacto)] ?? IMPACTO_STYLES.default;
+}
+
+const PRIORIDADE_STYLES: Record<string, { badge: string; label: string }> = {
+  alta: {
+    badge: "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300",
+    label: "alta",
+  },
+  media: {
+    badge: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+    label: "média",
+  },
+  baixa: {
+    badge: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+    label: "baixa",
+  },
+  default: {
+    badge: "border-slate-500/30 bg-slate-500/10 text-slate-700 dark:text-slate-300",
+    label: "não classificada",
+  },
+};
+
+function normalizePrioridade(prioridade: Prioridade) {
+  return String(prioridade ?? "").trim().toLowerCase().replace(/[^\w-]/g, "");
+}
+
+function getPrioridadeStyles(prioridade: Prioridade) {
+  return PRIORIDADE_STYLES[normalizePrioridade(prioridade)] ?? PRIORIDADE_STYLES.default;
+}
 
 function CrmPage() {
   const navigate = useNavigate();
@@ -167,6 +226,9 @@ function CrmPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar por nome, WhatsApp, CNPJ..."
+            spellCheck={false}
+            autoCapitalize="off"
+            autoCorrect="off"
             className="flex-1 bg-transparent text-sm focus:outline-none"
           />
         </div>
@@ -296,6 +358,8 @@ function LeadDrawer({ lead, onClose, onSaved, onDeleted }: { lead: Lead; onClose
   }
 
   async function exportPDF() {
+    await generateOrientamaisPlanoPdf({ draft, logoUrl: reportLogoUrl });
+    return;
     const { default: jsPDF } = await import("jspdf");
     const doc = new jsPDF({ unit: "pt", format: "a4" });
     const W = doc.internal.pageSize.getWidth();
@@ -303,25 +367,20 @@ function LeadDrawer({ lead, onClose, onSaved, onDeleted }: { lead: Lead; onClose
     const M = 48;
     const CONTENT_W = W - M * 2;
 
-    // Brand palette
     const C = {
-      primary: [16, 120, 80] as [number, number, number],
-      primaryDark: [10, 70, 50] as [number, number, number],
-      ink: [25, 35, 30] as [number, number, number],
-      sub: [110, 115, 112] as [number, number, number],
-      soft: [240, 246, 242] as [number, number, number],
-      border: [220, 225, 222] as [number, number, number],
-      accent: [200, 160, 60] as [number, number, number],
+      primary: [24, 47, 41] as [number, number, number],
+      primaryDark: [12, 28, 25] as [number, number, number],
+      ink: [34, 42, 40] as [number, number, number],
+      sub: [108, 115, 113] as [number, number, number],
+      soft: [246, 244, 239] as [number, number, number],
+      paper: [255, 255, 253] as [number, number, number],
+      border: [226, 229, 223] as [number, number, number],
+      accent: [190, 151, 64] as [number, number, number],
+      red: [188, 74, 64] as [number, number, number],
+      amber: [204, 146, 64] as [number, number, number],
+      green: [89, 122, 95] as [number, number, number],
+      slate: [107, 114, 128] as [number, number, number],
     };
-    const impactColor = (i: string): [number, number, number] =>
-      i === "alto" ? [190, 60, 60] : i === "medio" ? [200, 140, 50] : [70, 130, 90];
-    const prioColor = (p: string): [number, number, number] =>
-      p === "alta" ? [190, 60, 60] : p === "media" ? [200, 140, 50] : [70, 130, 90];
-
-    let y = M;
-    let pageNum = 0;
-    const TOP = 90;
-    const BOTTOM = H - 60;
 
     const fill = (rgb: [number, number, number]) => doc.setFillColor(rgb[0], rgb[1], rgb[2]);
     const stroke = (rgb: [number, number, number]) => doc.setDrawColor(rgb[0], rgb[1], rgb[2]);
@@ -331,326 +390,490 @@ function LeadDrawer({ lead, onClose, onSaved, onDeleted }: { lead: Lead; onClose
       doc.setFontSize(size);
     };
 
-    const drawHeader = () => {
+    const safeText = (value: string | null | undefined, fallback = "—") =>
+      (value && value.trim() ? value.trim() : fallback);
+
+    const stripMd = (s: string) =>
+      s.replace(/\*\*(.+?)\*\*/g, "$1").replace(/`([^`]+)`/g, "$1").replace(/^#+\s*/gm, "");
+
+    const normalizeText = (s: string) => stripMd(s).replace(/\r\n/g, "\n").trim();
+
+    const normalizeImpact = (value: string) => String(value ?? "").trim().toLowerCase().replace(/[^\w-]/g, "");
+    const normalizePriority = (value: string) => String(value ?? "").trim().toLowerCase().replace(/[^\w-]/g, "");
+
+    const impactBadge = (impacto: string) => {
+      const i = normalizeImpact(impacto);
+      if (i === "alto") return { fill: [253, 230, 230] as [number, number, number], text: C.red, label: "Alto" };
+      if (i === "medio") return { fill: [255, 243, 219] as [number, number, number], text: C.amber, label: "Médio" };
+      if (i === "baixo") return { fill: [232, 246, 237] as [number, number, number], text: C.green, label: "Baixo" };
+      return { fill: [241, 245, 249] as [number, number, number], text: C.slate, label: "Impacto" };
+    };
+
+    const priorityBadge = (prioridade: string) => {
+      const p = normalizePriority(prioridade);
+      if (p === "alta") return { fill: [253, 230, 230] as [number, number, number], text: C.red, label: "Alta" };
+      if (p === "media") return { fill: [255, 243, 219] as [number, number, number], text: C.amber, label: "Média" };
+      if (p === "baixa") return { fill: [232, 246, 237] as [number, number, number], text: C.green, label: "Baixa" };
+      return { fill: [241, 245, 249] as [number, number, number], text: C.slate, label: "Prioridade" };
+    };
+
+    const textWidth = (txt: string, size: number, bold = false) => {
+      setFont(size, bold);
+      return doc.getTextWidth(txt);
+    };
+
+    const drawBadge = (
+      text: string,
+      x: number,
+      yPos: number,
+      colors: { fill: [number, number, number]; text: [number, number, number] },
+    ) => {
+      setFont(8.5, true);
+      const padX = 10;
+      const width = doc.getTextWidth(text) + padX * 2;
+      fill(colors.fill);
+      doc.roundedRect(x, yPos - 9, width, 18, 9, 9, "F");
+      ink(colors.text);
+      doc.text(text.toUpperCase(), x + padX, yPos + 3);
+      return width;
+    };
+
+    const drawPill = (
+      text: string,
+      x: number,
+      yPos: number,
+      colors: { fill: [number, number, number]; text: [number, number, number] },
+    ) => drawBadge(text, x, yPos, colors);
+
+    const footer = (page: number) => {
+      stroke(C.border);
+      doc.setLineWidth(0.75);
+      doc.line(M, H - 36, W - M, H - 36);
+      ink(C.sub);
+      setFont(8.5, false);
+      doc.text("orientohub · consultoria estratégica para empreendedores", M, H - 22);
+      doc.text(`Página ${page}`, W - M, H - 22, { align: "right" });
+    };
+
+    const header = (title: string, page: number, subtitle = "Plano de Orientação Estratégica") => {
       fill(C.primary);
-      doc.rect(0, 0, W, 56, "F");
+      doc.rect(0, 0, W, 58, "F");
       fill(C.accent);
-      doc.rect(0, 56, W, 3, "F");
+      doc.rect(0, 58, W, 4, "F");
       ink([255, 255, 255]);
       setFont(13, true);
       doc.text("orientohub", M, 34);
-      setFont(9, false);
-      ink([220, 240, 230]);
-      doc.text("Plano de Orientação Estratégica", M, 47);
-      setFont(9, false);
-      ink([220, 240, 230]);
-      doc.text(
-        new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" }),
-        W - M,
-        40,
-        { align: "right" },
-      );
-    };
-    const drawFooter = () => {
-      stroke(C.border);
-      doc.line(M, H - 40, W - M, H - 40);
-      setFont(8, false);
-      ink(C.sub);
-      doc.text("orientohub · consultoria estratégica para empreendedores", M, H - 26);
-      doc.text(`${pageNum}`, W - M, H - 26, { align: "right" });
-    };
-    const newPage = (firstPage = false) => {
-      if (!firstPage) doc.addPage();
-      pageNum++;
-      drawHeader();
-      drawFooter();
-      y = TOP;
-    };
-    const ensure = (need: number) => {
-      if (y + need > BOTTOM) newPage();
+      setFont(8.8, false);
+      ink([224, 242, 233]);
+      doc.text(subtitle, M, 47);
+      setFont(8.8, false);
+      doc.text(title, W - M, 34, { align: "right" });
+      doc.text(new Date().toLocaleDateString("pt-BR"), W - M, 47, { align: "right" });
+      footer(page);
     };
 
-    // Markdown-aware paragraph renderer
-    const stripMd = (s: string) =>
-      s.replace(/\*\*(.+?)\*\*/g, "$1").replace(/`([^`]+)`/g, "$1").replace(/^#+\s*/gm, "");
-    const paragraph = (txt: string, opts: { size?: number; bold?: boolean; color?: [number, number, number]; lh?: number; indent?: number } = {}) => {
-      const size = opts.size ?? 10.5;
-      const lh = opts.lh ?? size + 4;
+    const addCoverBackground = () => {
+      fill([250, 249, 245]);
+      doc.rect(0, 0, W, H, "F");
+      fill([236, 233, 224]);
+      doc.circle(W - 78, 76, 48, "F");
+      fill([242, 236, 218]);
+      doc.circle(62, H - 70, 54, "F");
+      fill(C.primary);
+      doc.rect(0, 0, W, 10, "F");
+      fill(C.accent);
+      doc.rect(0, H - 10, W, 10, "F");
+    };
+
+    const drawLogoContain = (dataUrl: string, x: number, yPos: number, maxW: number, maxH: number) => {
+      const props = doc.getImageProperties(dataUrl);
+      const ratio = props.width / props.height;
+      let w = maxW;
+      let h = w / ratio;
+      if (h > maxH) {
+        h = maxH;
+        w = h * ratio;
+      }
+      const dx = x + (maxW - w) / 2;
+      const dy = yPos + (maxH - h) / 2;
+      doc.addImage(dataUrl, "PNG", dx, dy, w, h);
+    };
+
+    const addContentPage = (contentPage: number) => {
+      doc.addPage();
+      header("PLANO PERSONALIZADO", contentPage);
+      y = 82;
+    };
+
+    let page = 0;
+    let y = 82;
+    const maxY = () => H - 64;
+    const ensure = (need: number) => {
+      if (y + need > maxY()) {
+        page += 1;
+        addContentPage(page);
+        y = 82;
+      }
+    };
+
+    const paragraph = (txt: string, opts: { size?: number; bold?: boolean; color?: [number, number, number]; indent?: number; lineGap?: number } = {}) => {
+      const size = opts.size ?? 10.2;
+      const lineGap = opts.lineGap ?? 4;
       const indent = opts.indent ?? 0;
       setFont(size, opts.bold);
       ink(opts.color ?? C.ink);
-      const lines = doc.splitTextToSize(stripMd(txt), CONTENT_W - indent);
-      lines.forEach((ln: string) => {
-        ensure(lh);
-        doc.text(ln, M + indent, y);
-        y += lh;
+      const lines = doc.splitTextToSize(normalizeText(txt), CONTENT_W - indent);
+      lines.forEach((line: string) => {
+        ensure(size + lineGap + 1);
+        doc.text(line, M + indent, y);
+        y += size + lineGap;
       });
-    };
-    const renderMarkdown = (md: string) => {
-      const blocks = md.split(/\n\s*\n/);
-      blocks.forEach((block) => {
-        const lines = block.split("\n").map((l) => l.trim()).filter(Boolean);
-        lines.forEach((ln) => {
-          if (/^#{1,2}\s/.test(ln)) {
-            y += 4;
-            paragraph(ln.replace(/^#+\s*/, ""), { size: 12, bold: true, color: C.primaryDark });
-          } else if (/^#{3,}\s/.test(ln)) {
-            paragraph(ln.replace(/^#+\s*/, ""), { size: 11, bold: true, color: C.ink });
-          } else if (/^[-*•]\s/.test(ln)) {
-            const txt = ln.replace(/^[-*•]\s/, "");
-            ensure(14);
-            fill(C.primary);
-            doc.circle(M + 3, y - 3, 1.6, "F");
-            paragraph(txt, { indent: 14 });
-          } else if (/^\d+\.\s/.test(ln)) {
-            paragraph(ln, { indent: 6 });
-          } else {
-            paragraph(ln);
-          }
-        });
-        y += 4;
-      });
+      y += 2;
     };
 
-    const sectionTitle = (num: number, title: string) => {
-      ensure(60);
-      y += 10;
-      fill(C.primary);
-      doc.roundedRect(M, y - 14, 26, 26, 4, 4, "F");
+    const measureLines = (txt: string, width: number, size = 10.2, bold = false) => {
+      setFont(size, bold);
+      return doc.splitTextToSize(normalizeText(txt), width) as string[];
+    };
+
+    const drawWrappedLines = (
+      lines: string[],
+      x: number,
+      startY: number,
+      opts: { size?: number; color?: [number, number, number]; lineHeight?: number; bold?: boolean } = {},
+    ) => {
+      const size = opts.size ?? 10.2;
+      const lineHeight = opts.lineHeight ?? size + 4;
+      setFont(size, opts.bold);
+      ink(opts.color ?? C.ink);
+      lines.forEach((line, idx) => {
+        doc.text(line, x, startY + idx * lineHeight);
+      });
+      return startY + lines.length * lineHeight;
+    };
+
+    const renderFlowText = (
+      title: string,
+      text: string,
+      opts: { bodySize?: number; lineGap?: number; tone?: [number, number, number] } = {},
+    ) => {
+      const bodySize = opts.bodySize ?? 10.15;
+      const lineGap = opts.lineGap ?? 4.6;
+      const tone = opts.tone ?? C.primary;
+      const paragraphs = normalizeText(text)
+        .split(/\n+/)
+        .map((part) => part.trim())
+        .filter(Boolean);
+
+      const ensureLineSpace = (need: number) => {
+        if (y + need > maxY()) {
+          page += 1;
+          addContentPage(page);
+        }
+      };
+
+      ensureLineSpace(42);
+      ink(C.sub);
+      setFont(9.5, true);
+      doc.text(title, M + 18, y + 4);
+      stroke(C.border);
+      doc.setLineWidth(0.8);
+      doc.line(M + 18, y + 12, W - M - 18, y + 12);
+      y += 22;
+
+      paragraphs.forEach((paragraph, idx) => {
+        const lines = measureLines(paragraph, CONTENT_W - 36, bodySize);
+        lines.forEach((line) => {
+          ensureLineSpace(bodySize + lineGap + 2);
+          ink(C.ink);
+          setFont(bodySize, false);
+          doc.text(line, M + 18, y);
+          y += bodySize + lineGap;
+        });
+        y += idx < paragraphs.length - 1 ? 8 : 4;
+      });
+
+      fill(tone);
+      doc.rect(M + 18, y - 2, 34, 2.5, "F");
+      y += 4;
+    };
+
+    const sectionTitle = (num: number, title: string, tone: [number, number, number] = C.primary) => {
+      ensure(58);
+      y += 8;
+      fill(tone);
+      doc.roundedRect(M, y - 16, 28, 28, 7, 7, "F");
       ink([255, 255, 255]);
-      setFont(13, true);
-      doc.text(String(num), M + 13, y + 4, { align: "center" });
+      setFont(12, true);
+      doc.text(String(num), M + 14, y + 3, { align: "center" });
       ink(C.primaryDark);
       setFont(15, true);
-      doc.text(title, M + 38, y + 4);
+      doc.text(title, M + 40, y + 3);
       stroke(C.border);
-      doc.line(M, y + 18, W - M, y + 18);
-      y += 34;
+      doc.setLineWidth(0.8);
+      doc.line(M, y + 16, W - M, y + 16);
+      y += 28;
     };
 
-    const badge = (text: string, x: number, yy: number, color: [number, number, number]) => {
-      setFont(8, true);
-      const tw = doc.getTextWidth(text) + 14;
-      fill([color[0], color[1], color[2]]);
-      doc.setGState(new (doc as any).GState({ opacity: 0.15 }));
-      doc.roundedRect(x, yy - 9, tw, 14, 7, 7, "F");
-      doc.setGState(new (doc as any).GState({ opacity: 1 }));
-      ink(color);
-      doc.text(text.toUpperCase(), x + 7, yy + 1);
-      return tw;
+    const card = (x: number, yPos: number, w: number, h: number, fillColor: [number, number, number] = C.paper) => {
+      fill(fillColor);
+      stroke(C.border);
+      doc.roundedRect(x, yPos, w, h, 12, 12, "FD");
     };
 
-    // ===== COVER =====
-    newPage(true);
-    // Big hero block
-    fill(C.soft);
-    doc.roundedRect(M, y, CONTENT_W, 220, 10, 10, "F");
+    const logoDataUrl = await (async () => {
+      try {
+        const response = await fetch(logoUrl);
+        const blob = await response.blob();
+        return await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result));
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      } catch {
+        return null;
+      }
+    })();
+
+    const tocItems = [
+      { n: "01", title: "Diagnóstico", on: !!draft.diagnostico_ai },
+      { n: "02", title: "Análise", on: !!draft.analise_ai },
+      { n: "03", title: "Oportunidades", on: (draft.oportunidades ?? []).some((o) => o.selecionada) },
+      { n: "04", title: "Plano de ação", on: (draft.plano_acoes ?? []).length > 0 },
+      { n: "05", title: "Métricas", on: (draft.resultados_metricas ?? []).length > 0 },
+    ];
+
+    const renderOpportunity = (o: Oportunidade, index: number) => {
+      const badge = impactBadge(o.impacto);
+      const titleLines = measureLines(o.titulo, CONTENT_W - 86, 12.2, true);
+      const descLines = measureLines(o.descricao, CONTENT_W - 118, 10.1, false);
+      const titleBlockH = titleLines.length * 15;
+      const descBlockH = descLines.length * 13;
+      const height = 34 + titleBlockH + descBlockH + 26;
+      ensure(height + 16);
+      card(M, y, CONTENT_W, height);
+      fill(C.soft);
+      doc.roundedRect(M + 14, y + 14, 26, 26, 8, 8, "F");
+      ink(C.primaryDark);
+      setFont(11, true);
+      doc.text(String(index + 1).padStart(2, "0"), M + 27, y + 31, { align: "center" });
+      drawWrappedLines(titleLines, M + 52, y + 28, { size: 12.2, color: C.ink, lineHeight: 15, bold: true });
+      drawBadge(badge.label, W - M - 88, y + 28, { fill: badge.fill, text: badge.text });
+      const descY = y + 28 + titleBlockH + 10;
+      drawWrappedLines(descLines, M + 52, descY, { size: 10.1, color: C.sub, lineHeight: 13 });
+      y += height;
+      fill(C.border);
+      doc.rect(M + 52, y - 10, CONTENT_W - 104, 1, "F");
+      y += 6;
+    };
+
+    const renderAction = (a: Acao, index: number) => {
+      const badge = priorityBadge(a.prioridade);
+      const titleLines = measureLines(a.titulo, CONTENT_W - 124, 12.4, true);
+      const descLines = measureLines(a.descricao, CONTENT_W - 112, 10.1, false);
+      const metaLine = `Prazo: ${safeText(a.prazo)}   ·   Responsável: ${safeText(a.responsavel)}`;
+      const metaLines = measureLines(metaLine, CONTENT_W - 36, 9.2, false);
+      const height = 34 + titleLines.length * 15 + metaLines.length * 12 + descLines.length * 13 + 24;
+      ensure(height + 12);
+      card(M, y, CONTENT_W, height);
+      fill(C.primary);
+      doc.rect(M, y, 4, height, "F");
+      ink(C.primaryDark);
+      setFont(9, true);
+      doc.text(`AÇÃO ${String(index + 1).padStart(2, "0")}`, M + 18, y + 18);
+      drawBadge(badge.label, W - M - 94, y + 18, { fill: badge.fill, text: badge.text });
+      drawWrappedLines(titleLines, M + 18, y + 39, { size: 12.4, color: C.ink, lineHeight: 15, bold: true });
+      drawWrappedLines(metaLines, M + 18, y + 39 + titleLines.length * 15 + 8, { size: 9.2, color: C.sub, lineHeight: 12 });
+      drawWrappedLines(descLines, M + 18, y + 39 + titleLines.length * 15 + 8 + metaLines.length * 12 + 8, {
+        size: 10.1,
+        color: C.ink,
+        lineHeight: 13,
+      });
+      y += height;
+    };
+
+    const renderMetric = (m: Metrica, index: number) => {
+      const width = CONTENT_W;
+      const nameLines = measureLines(safeText(m.nome), 205, 11.4, true);
+      const height = 74 + (nameLines.length - 1) * 12;
+      ensure(height + 10);
+      card(M, y, width, height);
+      fill(C.soft);
+      doc.roundedRect(M + 12, y + 14, 24, 24, 8, 8, "F");
+      ink(C.primaryDark);
+      setFont(10, true);
+      doc.text(String(index + 1), M + 24, y + 29, { align: "center" });
+      drawWrappedLines(nameLines, M + 48, y + 26, { size: 11.4, color: C.ink, lineHeight: 12, bold: true });
+      ink(C.sub);
+      setFont(8.8, true);
+      doc.text(safeText(m.frequencia), W - M - 124, y + 20, { align: "right" });
+      doc.text("META", W - M - 18, y + 20, { align: "right" });
+      ink(C.primaryDark);
+      setFont(10.2, true);
+      doc.text(safeText(m.meta), W - M - 18, y + 39, { align: "right" });
+      ink(C.sub);
+      setFont(8.8, false);
+      doc.text(`${safeText(m.unidade)} · Atual: ${safeText(m.valor_atual)}`, M + 48, y + height - 14);
+      y += height + 12;
+    };
+
+    // COVER
+    addCoverBackground();
+    page = 0;
+    y = 68;
+    if (logoDataUrl) {
+      try {
+        fill(C.primary);
+        doc.roundedRect(M, y, 140, 82, 18, 18, "F");
+        stroke(C.primaryDark);
+        doc.setLineWidth(0.9);
+        doc.roundedRect(M, y, 140, 82, 18, 18, "S");
+        drawLogoContain(logoDataUrl, M + 12, y + 12, 116, 58);
+      } catch {
+        // ignore logo render issues, keep layout intact
+      }
+    }
+    fill(C.primary);
+    doc.roundedRect(W - M - 162, y + 8, 162, 28, 14, 14, "F");
+    ink([255, 255, 255]);
+    setFont(9.2, true);
+    doc.text("RELATÓRIO EXECUTIVO", W - M - 81, y + 26, { align: "center" });
     ink(C.sub);
-    setFont(9, true);
-    doc.text("PLANO PERSONALIZADO PARA", M + 24, y + 32);
+    setFont(9.5, true);
+    doc.text("PLANO PERSONALIZADO PARA", M + 160, y + 24);
     ink(C.primaryDark);
-    setFont(26, true);
-    const nameLines = doc.splitTextToSize(draft.nome, CONTENT_W - 48);
-    let ny = y + 64;
-    nameLines.slice(0, 2).forEach((ln: string) => { doc.text(ln, M + 24, ny); ny += 30; });
+    setFont(22, true);
+    const titleLines = doc.splitTextToSize(draft.nome, CONTENT_W - 200);
+    drawWrappedLines(titleLines, M + 160, y + 56, { size: 22, color: C.primaryDark, lineHeight: 26, bold: true });
     if (draft.tipo_negocio) {
       ink(C.sub);
       setFont(11, false);
-      doc.text(draft.tipo_negocio, M + 24, ny + 6);
+      doc.text(safeText(draft.tipo_negocio), M + 160, y + 88);
     }
-    // chips row
-    let cy = y + 170;
-    ink(C.sub);
-    setFont(9, true);
-    doc.text("CONTATO", M + 24, cy);
     ink(C.ink);
-    setFont(11, true);
-    doc.text(draft.whatsapp, M + 24, cy + 16);
+    setFont(11, false);
+    const coverIntro = doc.splitTextToSize(
+      "Um documento executivo para apresentar diagnóstico, direcionar decisões e transformar oportunidade em execução.",
+      CONTENT_W - 184,
+    );
+    drawWrappedLines(coverIntro, M + 160, y + 114, { size: 11, color: C.ink, lineHeight: 14 });
+    fill(C.soft);
+    doc.roundedRect(M, y + 118, CONTENT_W, 112, 18, 18, "F");
+    ink(C.sub);
+    setFont(9.2, true);
+    doc.text("CONTATO", M + 20, y + 138);
+    ink(C.ink);
+    setFont(12, true);
+    doc.text(safeText(draft.whatsapp), M + 20, y + 158);
     if (draft.cnpj) {
-      ink(C.sub); setFont(9, true);
-      doc.text("CNPJ", M + 220, cy);
-      ink(C.ink); setFont(11, true);
-      doc.text(draft.cnpj, M + 220, cy + 16);
+      ink(C.sub);
+      setFont(9.2, true);
+      doc.text("CNPJ", M + 224, y + 138);
+      ink(C.ink);
+      setFont(12, true);
+      doc.text(safeText(draft.cnpj), M + 224, y + 158);
     }
-    y += 240;
+    fill(C.primary);
+    doc.roundedRect(W - M - 178, y + 176, 178, 30, 15, 15, "F");
+    ink([255, 255, 255]);
+    setFont(9.2, true);
+    doc.text("CONSULTORIA ESTRATÉGICA", W - M - 89, y + 195, { align: "center" });
+    y += 248;
 
-    // Sumário
-    ensure(180);
+    const resumeLines = doc.splitTextToSize(
+      "Este documento organiza o diagnóstico, a análise, as oportunidades priorizadas, o plano de ação e as métricas-chave do cliente. Use como base para conduzir a consultoria com clareza, ritmo e critério de execução.",
+      CONTENT_W - 36,
+    ) as string[];
+    const resumeHeight = 34 + resumeLines.length * 13 + 18;
+    card(M, y, CONTENT_W, resumeHeight, C.paper);
     ink(C.primaryDark);
-    setFont(11, true);
-    doc.text("SUMÁRIO", M, y);
-    stroke(C.primary);
-    doc.setLineWidth(1.2);
-    doc.line(M, y + 6, M + 60, y + 6);
-    doc.setLineWidth(0.5);
-    y += 22;
-    const toc: Array<{ n: number; t: string; on: boolean }> = [
-      { n: 1, t: "Diagnóstico estratégico", on: !!draft.diagnostico_ai },
-      { n: 2, t: "Análise detalhada", on: !!draft.analise_ai },
-      { n: 3, t: "Oportunidades priorizadas", on: (draft.oportunidades ?? []).some((o) => o.selecionada) },
-      { n: 4, t: "Plano de ação", on: (draft.plano_acoes ?? []).length > 0 },
-      { n: 5, t: "Métricas de acompanhamento", on: (draft.resultados_metricas ?? []).length > 0 },
-    ];
-    toc.forEach((it) => {
-      ink(it.on ? C.ink : [180, 185, 182]);
-      setFont(10.5, false);
-      doc.text(`${String(it.n).padStart(2, "0")}   ${it.t}`, M, y);
-      setFont(8, true);
-      ink(it.on ? C.primary : [200, 205, 202]);
-      doc.text(it.on ? "INCLUSO" : "—", W - M, y, { align: "right" });
-      y += 18;
-    });
+    setFont(11.5, true);
+    doc.text("Resumo executivo", M + 18, y + 22);
+    drawWrappedLines(resumeLines, M + 18, y + 42, { size: 9.5, color: C.sub, lineHeight: 13 });
+    fill(C.border);
+    doc.rect(M + 18, y + resumeHeight - 20, CONTENT_W - 36, 1, "F");
+    y += resumeHeight + 12;
 
-    // Contexto inicial (form data)
+    card(M, y, CONTENT_W, 126, C.soft);
+    ink(C.primaryDark);
+    setFont(10, true);
+    doc.text("VISÃO GERAL", M + 18, y + 20);
+    const summaryX = [M + 18, M + 196, M + 374];
+    tocItems.forEach((item, i) => {
+      const row = i < 3 ? 0 : 1;
+      const col = i < 3 ? i : i - 3;
+      const x = summaryX[col];
+      const yy = y + 42 + row * 32;
+      drawPill(item.on ? "Incluso" : "Pendente", x, yy, item.on
+        ? { fill: [232, 246, 237], text: C.green }
+        : { fill: [241, 245, 249], text: C.slate });
+      ink(C.sub);
+      setFont(8.4, true);
+      doc.text(item.n, x, yy + 21);
+      ink(C.ink);
+      setFont(9.3, true);
+      doc.text(item.title, x + 28, yy + 21);
+    });
+    y += 152;
+
+    // PAGE 2+
     if (draft.desafios_reais || draft.objetivos_organizacionais) {
-      ensure(120);
-      y += 18;
-      ink(C.primaryDark);
-      setFont(11, true);
-      doc.text("CONTEXTO INFORMADO", M, y);
-      stroke(C.primary);
-      doc.setLineWidth(1.2);
-      doc.line(M, y + 6, M + 110, y + 6);
-      doc.setLineWidth(0.5);
-      y += 18;
+      sectionTitle(1, "Contexto informado");
       if (draft.desafios_reais) {
-        paragraph("Desafios reais", { size: 9.5, bold: true, color: C.sub });
-        paragraph(draft.desafios_reais);
-        y += 4;
+        renderFlowText("Desafios reais", draft.desafios_reais, { bodySize: 10.15, lineGap: 4.6, tone: C.accent });
       }
       if (draft.objetivos_organizacionais) {
-        paragraph("Objetivos organizacionais", { size: 9.5, bold: true, color: C.sub });
-        paragraph(draft.objetivos_organizacionais);
+        renderFlowText("Objetivos organizacionais", draft.objetivos_organizacionais, { bodySize: 10.15, lineGap: 4.6, tone: C.primary });
       }
     }
 
-    // ===== 1. DIAGNÓSTICO =====
     if (draft.diagnostico_ai) {
-      sectionTitle(1, "Diagnóstico estratégico");
-      renderMarkdown(draft.diagnostico_ai);
+      sectionTitle(2, "Diagnóstico estratégico", C.primary);
+      renderFlowText("Leitura estratégica", draft.diagnostico_ai, { bodySize: 10.15, lineGap: 4.6, tone: C.primary });
     }
-    // ===== 2. ANÁLISE =====
+
     if (draft.analise_ai) {
-      sectionTitle(2, "Análise detalhada");
-      renderMarkdown(draft.analise_ai);
+      sectionTitle(3, "Análise detalhada", C.primaryDark);
+      renderFlowText("Síntese analítica", draft.analise_ai, { bodySize: 10.15, lineGap: 4.6, tone: C.accent });
     }
-    // ===== 3. OPORTUNIDADES =====
+
     const opSel = (draft.oportunidades ?? []).filter((o) => o.selecionada);
     if (opSel.length) {
-      sectionTitle(3, "Oportunidades priorizadas");
+      sectionTitle(4, "Oportunidades priorizadas", C.accent);
       opSel.forEach((o, i) => {
-        ensure(70);
-        const startY = y;
-        // Card
-        fill([255, 255, 255]);
-        stroke(C.border);
-        doc.roundedRect(M, startY - 4, CONTENT_W, 0, 6, 6, "S"); // placeholder
-        // Number bubble
-        fill(C.soft);
-        doc.roundedRect(M + 8, startY + 2, 22, 22, 4, 4, "F");
-        ink(C.primaryDark);
-        setFont(11, true);
-        doc.text(String(i + 1).padStart(2, "0"), M + 19, startY + 17, { align: "center" });
-        // Title
-        ink(C.ink);
-        setFont(12, true);
-        const tLines = doc.splitTextToSize(o.titulo, CONTENT_W - 60 - 70);
-        doc.text(tLines, M + 38, startY + 12);
-        // Impact badge
-        badge(`impacto ${o.impacto}`, W - M - 90, startY + 12, impactColor(o.impacto));
-        y = startY + 12 + tLines.length * 14 + 6;
-        // Description
-        paragraph(o.descricao, { indent: 38, size: 10, color: C.ink });
-        const endY = y + 6;
-        // Draw card border around
-        stroke(C.border);
-        doc.roundedRect(M, startY - 4, CONTENT_W, endY - startY + 4, 6, 6, "S");
-        y = endY + 10;
-      });
-    }
-    // ===== 4. PLANO DE AÇÃO =====
-    if ((draft.plano_acoes ?? []).length) {
-      sectionTitle(4, "Plano de ação");
-      draft.plano_acoes.forEach((a, i) => {
-        ensure(90);
-        const startY = y;
-        // Left accent bar
-        fill(C.primary);
-        doc.rect(M, startY, 3, 60, "F");
-        // Header line
-        ink(C.primaryDark);
-        setFont(9, true);
-        doc.text(`AÇÃO ${String(i + 1).padStart(2, "0")}`, M + 14, startY + 10);
-        // Priority badge top-right
-        badge(`prioridade ${a.prioridade}`, W - M - 100, startY + 10, prioColor(a.prioridade));
-        // Title
-        ink(C.ink);
-        setFont(12, true);
-        const tLines = doc.splitTextToSize(a.titulo, CONTENT_W - 28);
-        let ty = startY + 26;
-        tLines.forEach((ln: string) => { doc.text(ln, M + 14, ty); ty += 15; });
-        y = ty + 4;
-        // Meta row
-        ink(C.sub);
-        setFont(9, false);
-        doc.text(`Prazo: ${a.prazo}   ·   Responsável: ${a.responsavel}`, M + 14, y);
-        y += 14;
-        // Description
-        paragraph(a.descricao, { indent: 14, size: 10 });
-        y += 10;
-      });
-    }
-    // ===== 5. MÉTRICAS =====
-    if ((draft.resultados_metricas ?? []).length) {
-      sectionTitle(5, "Métricas de acompanhamento");
-      // Table header
-      ensure(40);
-      fill(C.primary);
-      doc.rect(M, y - 12, CONTENT_W, 22, "F");
-      ink([255, 255, 255]);
-      setFont(9, true);
-      doc.text("MÉTRICA", M + 10, y + 2);
-      doc.text("UNIDADE", M + 220, y + 2);
-      doc.text("FREQUÊNCIA", M + 310, y + 2);
-      doc.text("META", W - M - 10, y + 2, { align: "right" });
-      y += 18;
-      draft.resultados_metricas.forEach((m, i) => {
-        ensure(24);
-        if (i % 2 === 0) {
-          fill(C.soft);
-          doc.rect(M, y - 12, CONTENT_W, 22, "F");
-        }
-        ink(C.ink);
-        setFont(10, true);
-        const nm = doc.splitTextToSize(m.nome, 200);
-        doc.text(nm[0] ?? m.nome, M + 10, y + 2);
-        setFont(9.5, false);
-        ink(C.sub);
-        doc.text(m.unidade ?? "—", M + 220, y + 2);
-        doc.text(m.frequencia ?? "—", M + 310, y + 2);
-        ink(C.primaryDark);
-        setFont(10, true);
-        doc.text(m.meta ?? "—", W - M - 10, y + 2, { align: "right" });
-        y += 22;
+        renderOpportunity(o, i);
+        if (i < opSel.length - 1) y += 4;
       });
     }
 
-    // Closing page
-    ensure(120);
-    y += 30;
-    fill(C.soft);
-    doc.roundedRect(M, y, CONTENT_W, 110, 10, 10, "F");
+    if ((draft.plano_acoes ?? []).length) {
+      sectionTitle(5, "Plano de ação", C.primary);
+      draft.plano_acoes.forEach((a, i) => {
+        renderAction(a, i);
+        if (i < draft.plano_acoes.length - 1) y += 4;
+      });
+    }
+
+    if ((draft.resultados_metricas ?? []).length) {
+      sectionTitle(6, "Métricas de acompanhamento", C.primaryDark);
+      draft.resultados_metricas.forEach((m, i) => {
+        renderMetric(m, i);
+        if (i < draft.resultados_metricas.length - 1) y += 4;
+      });
+    }
+
+    ensure(110);
+    const nextLines = doc.splitTextToSize(
+      "Execute o plano priorizando as ações de maior impacto, acompanhe as métricas com regularidade e revise a estratégia conforme os resultados do cliente.",
+      CONTENT_W - 36,
+    ) as string[];
+    const nextHeight = 38 + nextLines.length * 13 + 18;
+    card(M, y, CONTENT_W, nextHeight, C.soft);
     ink(C.primaryDark);
-    setFont(14, true);
-    doc.text("Próximo passo", M + 24, y + 32);
-    ink(C.ink);
-    setFont(10.5, false);
-    const closing = doc.splitTextToSize(
-      "Este plano é o seu guia. Execute as ações priorizadas, acompanhe as métricas e ajuste com base nos resultados. A orientohub está com você em cada etapa.",
-      CONTENT_W - 48,
-    );
-    let yy = y + 54;
-    closing.forEach((ln: string) => { doc.text(ln, M + 24, yy); yy += 14; });
+    setFont(13.5, true);
+    doc.text("Próximos passos", M + 18, y + 24);
+    drawWrappedLines(nextLines, M + 18, y + 44, { size: 10.2, color: C.ink, lineHeight: 13 });
 
     doc.save(`orientohub-plano-${draft.nome.replace(/\s+/g, "-").toLowerCase()}.pdf`);
   }
@@ -724,7 +947,7 @@ function LeadDrawer({ lead, onClose, onSaved, onDeleted }: { lead: Lead; onClose
                 <Textarea value={draft.anotacoes ?? ""} onChange={(v) => setDraft({ ...draft, anotacoes: v })} />
               </Field>
               <AIButton loading={aiLoading === "diag"}
-                onClick={() => runAI("diag", () => runEnrich({ data: { leadId: lead.id } }), (r) => setDraft({ ...draft, diagnostico_ai: r.diagnostico_ai }))}
+                onClick={() => runAI("diag", () => runEnrich({ data: { leadId: lead.id } }), (r) => setDraft({ ...draft, diagnostico_ai: r.diagnostico_ai, stage: "diagnostico" }))}
                 label={draft.diagnostico_ai ? "Reprocessar diagnóstico com IA" : "Enriquecer diagnóstico com IA"}
                 hint="Combina os dados do formulário + suas anotações" />
               <Field label="Diagnóstico enriquecido">
@@ -736,7 +959,7 @@ function LeadDrawer({ lead, onClose, onSaved, onDeleted }: { lead: Lead; onClose
           {tab === "analise" && (
             <>
               <AIButton loading={aiLoading === "ana"} disabled={!draft.diagnostico_ai}
-                onClick={() => runAI("ana", () => runAnalise({ data: { leadId: lead.id } }), (r) => setDraft({ ...draft, analise_ai: r.analise_ai, oportunidades: r.oportunidades }))}
+                onClick={() => runAI("ana", () => runAnalise({ data: { leadId: lead.id } }), (r) => setDraft({ ...draft, analise_ai: r.analise_ai, oportunidades: r.oportunidades, stage: "analise" }))}
                 label={draft.analise_ai ? "Reprocessar análise" : "Gerar análise + oportunidades"}
                 hint={draft.diagnostico_ai ? "Transborda o diagnóstico em análise detalhada" : "Gere o diagnóstico antes"} />
               <Field label="Análise detalhada">
@@ -755,7 +978,9 @@ function LeadDrawer({ lead, onClose, onSaved, onDeleted }: { lead: Lead; onClose
                       <div className="flex-1">
                         <div className="flex items-center justify-between gap-2">
                           <div className="font-semibold text-sm">{o.titulo}</div>
-                          <span className={`text-[0.6rem] uppercase font-bold px-1.5 py-0.5 rounded ${o.impacto === "alto" ? "bg-primary/20 text-primary" : "bg-secondary text-muted-foreground"}`}>{o.impacto}</span>
+                          <span className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider ${getImpactoStyles(o.impacto).badge}`}>
+                            {getImpactoStyles(o.impacto).label}
+                          </span>
                         </div>
                         <div className="text-xs text-muted-foreground mt-1">{o.descricao}</div>
                       </div>
@@ -770,7 +995,7 @@ function LeadDrawer({ lead, onClose, onSaved, onDeleted }: { lead: Lead; onClose
             <>
               <AIButton loading={aiLoading === "plano"}
                 disabled={(draft.oportunidades ?? []).filter((o) => o.selecionada).length === 0}
-                onClick={() => runAI("plano", () => runPlano({ data: { leadId: lead.id } }), (r) => setDraft({ ...draft, plano_acoes: r.plano_acoes }))}
+                onClick={() => runAI("plano", () => runPlano({ data: { leadId: lead.id } }), (r) => setDraft({ ...draft, plano_acoes: r.plano_acoes, stage: "estrategia" }))}
                 label={draft.plano_acoes?.length ? "Reprocessar plano" : "Gerar plano de ação personalizado"}
                 hint="Com base nas oportunidades selecionadas" />
               <div className="space-y-2">
@@ -779,7 +1004,9 @@ function LeadDrawer({ lead, onClose, onSaved, onDeleted }: { lead: Lead; onClose
                   <div key={i} className="rounded-lg border border-border p-3">
                     <div className="flex items-center justify-between gap-2">
                       <div className="font-semibold text-sm"><span className="text-primary">{i + 1}.</span> {a.titulo}</div>
-                      <span className={`text-[0.6rem] uppercase font-bold px-1.5 py-0.5 rounded ${a.prioridade === "alta" ? "bg-primary/20 text-primary" : "bg-secondary text-muted-foreground"}`}>{a.prioridade}</span>
+                      <span className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider ${getPrioridadeStyles(a.prioridade).badge}`}>
+                        {getPrioridadeStyles(a.prioridade).label}
+                      </span>
                     </div>
                     <div className="text-[0.65rem] uppercase tracking-wider text-muted-foreground mt-1">Prazo: {a.prazo} · Responsável: {a.responsavel}</div>
                     <div className="text-xs text-muted-foreground mt-2 whitespace-pre-wrap">{a.descricao}</div>
@@ -824,7 +1051,7 @@ function LeadDrawer({ lead, onClose, onSaved, onDeleted }: { lead: Lead; onClose
           {tab === "resultados" && (
             <>
               <AIButton loading={aiLoading === "metricas"} disabled={(draft.plano_acoes ?? []).length === 0}
-                onClick={() => runAI("metricas", () => runMetricas({ data: { leadId: lead.id } }), (r) => setDraft({ ...draft, resultados_metricas: r.resultados_metricas }))}
+                onClick={() => runAI("metricas", () => runMetricas({ data: { leadId: lead.id } }), (r) => setDraft({ ...draft, resultados_metricas: r.resultados_metricas, stage: "resultados" }))}
                 label={draft.resultados_metricas?.length ? "Atualizar métricas sugeridas" : "Sugerir métricas com IA"}
                 hint="Métricas-chave para mensurar e ajustar" />
               <div className="space-y-2">
@@ -841,10 +1068,16 @@ function LeadDrawer({ lead, onClose, onSaved, onDeleted }: { lead: Lead; onClose
                       </div>
                       <div className="col-span-2">
                         <div className="text-[0.6rem] uppercase text-muted-foreground">Valor atual</div>
-                        <input value={m.valor_atual} onChange={(e) => {
+                        <input
+                          value={m.valor_atual}
+                          onChange={(e) => {
                           const next = [...draft.resultados_metricas]; next[i] = { ...m, valor_atual: e.target.value };
                           setDraft({ ...draft, resultados_metricas: next });
-                        }} className="w-full rounded bg-input border border-border px-2 py-1 text-xs focus:border-primary focus:outline-none" />
+                        }}
+                          spellCheck={false}
+                          autoCapitalize="off"
+                          autoCorrect="off"
+                          className="w-full rounded bg-input border border-border px-2 py-1 text-xs focus:border-primary focus:outline-none" />
                       </div>
                     </div>
                   </div>
@@ -906,14 +1139,25 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function Input({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <input value={value} onChange={(e) => onChange(e.target.value)}
+    <input
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      spellCheck={false}
+      autoCapitalize="off"
+      autoCorrect="off"
       className="w-full rounded-lg bg-input border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none" />
   );
 }
 
 function Textarea({ value, onChange, rows = 3 }: { value: string; onChange: (v: string) => void; rows?: number }) {
   return (
-    <textarea value={value} onChange={(e) => onChange(e.target.value)} rows={rows}
+    <textarea
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      rows={rows}
+      spellCheck={false}
+      autoCapitalize="off"
+      autoCorrect="off"
       className="w-full rounded-lg bg-input border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none resize-none" />
   );
 }

@@ -2,8 +2,10 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const MODEL = "google/gemini-3-flash-preview";
+// OpenAI-compatível do Google Gemini e fallback do gateway Lovable.
+const GEMINI_GATEWAY = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+const LOVABLE_GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const MODEL = "gemini-2.5-flash";
 
 type Lead = {
   id: string;
@@ -20,18 +22,55 @@ type Lead = {
   plano_acoes: Array<{ titulo: string; descricao: string; prazo: string; responsavel: string; prioridade: string }>;
 };
 
-async function callAI(body: Record<string, unknown>) {
-  const key = process.env.LOVABLE_API_KEY;
-  if (!key) throw new Error("LOVABLE_API_KEY não configurada");
-  const res = await fetch(GATEWAY, {
+async function requestAI(url: string, key: string, providerName: string, body: Record<string, unknown>) {
+  const res = await fetch(url, {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify({ model: MODEL, ...body }),
   });
-  if (res.status === 429) throw new Error("Limite de uso da IA atingido. Tente em instantes.");
-  if (res.status === 402) throw new Error("Créditos da IA esgotados. Adicione créditos no workspace.");
-  if (!res.ok) throw new Error(`Erro da IA: ${res.status} ${await res.text()}`);
+
+  if (res.status === 429) throw new Error(`Limite de uso da IA do ${providerName} atingido. Tente em instantes.`);
+  if (res.status === 401 || res.status === 403) {
+    throw new Error(`${providerName} rejeitou a chave de API.`);
+  }
+  if (!res.ok) throw new Error(`Erro da IA (${providerName}): ${res.status} ${await res.text()}`);
   return res.json();
+}
+
+async function callAI(body: Record<string, unknown>) {
+  const providers = [
+    {
+      name: "Gemini",
+      url: GEMINI_GATEWAY,
+      key: process.env.GEMINI_API_KEY,
+    },
+    {
+      name: "Lovable",
+      url: LOVABLE_GATEWAY,
+      key: process.env.LOVABLE_API_KEY,
+    },
+  ].filter((p) => !!p.key) as Array<{ name: string; url: string; key: string }>;
+
+  if (providers.length === 0) {
+    throw new Error("Configure GEMINI_API_KEY ou LOVABLE_API_KEY para usar a IA.");
+  }
+
+  let lastError: unknown;
+
+  for (const provider of providers) {
+    try {
+      return await requestAI(provider.url, provider.key, provider.name, body);
+    } catch (error) {
+      lastError = error;
+      console.warn(`[AI] ${provider.name} falhou`, error);
+    }
+  }
+
+  const message =
+    lastError instanceof Error
+      ? lastError.message
+      : "Não foi possível chamar a IA agora. Verifique sua conexão ou a chave configurada.";
+  throw new Error(message);
 }
 
 function ctx(l: Lead) {
@@ -68,7 +107,7 @@ export const enrichDiagnostico = createServerFn({ method: "POST" })
     const content: string = json.choices?.[0]?.message?.content ?? "";
     const { error } = await context.supabase
       .from("leads")
-      .update({ diagnostico_ai: content })
+      .update({ diagnostico_ai: content, stage: "diagnostico" })
       .eq("id", lead.id);
     if (error) throw new Error(error.message);
     return { diagnostico_ai: content };
@@ -131,7 +170,7 @@ export const generateAnalise = createServerFn({ method: "POST" })
     const oportunidades = parsed.oportunidades.map((o: any) => ({ ...o, selecionada: true }));
     const { error } = await context.supabase
       .from("leads")
-      .update({ analise_ai: parsed.analise, oportunidades })
+      .update({ analise_ai: parsed.analise, oportunidades, stage: "analise" })
       .eq("id", lead.id);
     if (error) throw new Error(error.message);
     return { analise_ai: parsed.analise, oportunidades };
@@ -197,7 +236,7 @@ export const generatePlano = createServerFn({ method: "POST" })
     const parsed = JSON.parse(call.function.arguments);
     const { error } = await context.supabase
       .from("leads")
-      .update({ plano_acoes: parsed.acoes })
+      .update({ plano_acoes: parsed.acoes, stage: "estrategia" })
       .eq("id", lead.id);
     if (error) throw new Error(error.message);
     return { plano_acoes: parsed.acoes };
@@ -258,7 +297,7 @@ export const suggestMetricas = createServerFn({ method: "POST" })
     const parsed = JSON.parse(call.function.arguments);
     const { error } = await context.supabase
       .from("leads")
-      .update({ resultados_metricas: parsed.metricas })
+      .update({ resultados_metricas: parsed.metricas, stage: "resultados" })
       .eq("id", lead.id);
     if (error) throw new Error(error.message);
     return { resultados_metricas: parsed.metricas };
