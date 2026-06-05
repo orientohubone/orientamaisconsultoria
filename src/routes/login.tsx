@@ -62,11 +62,17 @@ function LoginPage() {
           <div>
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">E-mail</label>
             <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+              spellCheck={false}
+              autoCapitalize="off"
+              autoCorrect="off"
               className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none" />
           </div>
           <div>
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Senha</label>
             <input required type="password" minLength={6} value={password} onChange={(e) => setPassword(e.target.value)}
+              spellCheck={false}
+              autoCapitalize="off"
+              autoCorrect="off"
               className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none" />
           </div>
           {err && <p className="text-xs text-destructive">{err}</p>}

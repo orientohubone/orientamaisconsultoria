@@ -9,9 +9,9 @@ import { Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Orientamais — Orientação Gratuita para Empreendedores" },
+      { title: "Orientamais | Orientação Gratuita para Empreendedores" },
       { name: "description", content: "Sessão de orientação gratuita: clareza, estratégia e direção para o seu negócio crescer com método. Garanta sua vaga." },
-      { property: "og:title", content: "Orientamais — Orientação Gratuita para Empreendedores" },
+      { property: "og:title", content: "Orientamais | Orientação Gratuita para Empreendedores" },
       { property: "og:description", content: "Sessão de orientação gratuita: clareza, estratégia e direção para o seu negócio crescer." },
     ],
   }),
@@ -222,29 +222,29 @@ function Index() {
               >
                 <div>
                   <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Nome</label>
-                  <input required value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="Seu nome" />
+                  <input required value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} spellCheck={false} autoCapitalize="off" autoCorrect="off" className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="Seu nome" />
                 </div>
                 <div>
                   <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">WhatsApp</label>
-                  <input required type="tel" value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="(00) 00000-0000" />
+                  <input required type="tel" value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} spellCheck={false} autoCapitalize="off" autoCorrect="off" className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="(00) 00000-0000" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Seu negócio</label>
-                    <input value={form.tipo_negocio} onChange={(e) => setForm({ ...form, tipo_negocio: e.target.value })} className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="O que você faz?" />
+                    <input value={form.tipo_negocio} onChange={(e) => setForm({ ...form, tipo_negocio: e.target.value })} spellCheck={false} autoCapitalize="off" autoCorrect="off" className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="O que você faz?" />
                   </div>
                   <div>
                     <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">CNPJ</label>
-                    <input value={form.cnpj} onChange={(e) => setForm({ ...form, cnpj: e.target.value })} className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="Opcional" />
+                    <input value={form.cnpj} onChange={(e) => setForm({ ...form, cnpj: e.target.value })} spellCheck={false} autoCapitalize="off" autoCorrect="off" className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="Opcional" />
                   </div>
                 </div>
                 <div>
                   <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Desafios reais</label>
-                  <textarea rows={2} value={form.desafios_reais} onChange={(e) => setForm({ ...form, desafios_reais: e.target.value })} className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none resize-none" placeholder="O que mais te trava hoje?" />
+                  <textarea rows={2} value={form.desafios_reais} onChange={(e) => setForm({ ...form, desafios_reais: e.target.value })} spellCheck={false} autoCapitalize="off" autoCorrect="off" className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none resize-none" placeholder="O que mais te trava hoje?" />
                 </div>
                 <div>
                   <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Objetivos</label>
-                  <textarea rows={2} value={form.objetivos_organizacionais} onChange={(e) => setForm({ ...form, objetivos_organizacionais: e.target.value })} className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none resize-none" placeholder="Onde você quer chegar?" />
+                  <textarea rows={2} value={form.objetivos_organizacionais} onChange={(e) => setForm({ ...form, objetivos_organizacionais: e.target.value })} spellCheck={false} autoCapitalize="off" autoCorrect="off" className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none resize-none" placeholder="Onde você quer chegar?" />
                 </div>
                 {error && <p className="text-xs text-destructive">{error}</p>}
                 <button disabled={loading} type="submit" className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground font-bold py-3.5 hover:opacity-90 transition disabled:opacity-60">
