@@ -2,7 +2,6 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-// OpenAI-compatível do Google Gemini e fallback do gateway Lovable.
 const GEMINI_GATEWAY = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 const LOVABLE_GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "gemini-2.5-flash";
@@ -28,7 +27,6 @@ async function requestAI(url: string, key: string, providerName: string, body: R
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify({ model: MODEL, ...body }),
   });
-
   if (res.status === 429) throw new Error(`Limite de uso da IA do ${providerName} atingido. Tente em instantes.`);
   if (res.status === 401 || res.status === 403) {
     throw new Error(`${providerName} rejeitou a chave de API.`);
