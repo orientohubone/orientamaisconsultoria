@@ -108,13 +108,22 @@ export async function generateOrientamaisPlanoPdf({ draft, logoUrl }: GeneratePd
     yPos: number,
     colors: { fill: [number, number, number]; text: [number, number, number] },
   ) => {
-    setFont(8.5, true);
-    const padX = 10;
-    const width = doc.getTextWidth(text) + padX * 2;
+    setFont(8.2, true);
+    const padX = 12;
+    const height = 21;
+    const width = doc.getTextWidth(text) + padX * 2 + 8;
+    const yTop = yPos - 10;
+    fill([255, 255, 255]);
+    doc.roundedRect(x + 1, yTop + 1, width, height, 10, 10, "F");
     fill(colors.fill);
-    doc.roundedRect(x, yPos - 9, width, 18, 9, 9, "F");
+    stroke(colors.text);
+    doc.setLineWidth(0.8);
+    doc.roundedRect(x, yTop, width, height, 10, 10, "FD");
+    fill(colors.text);
+    doc.roundedRect(x, yTop, 4, height, 2, 2, "F");
+    fill(colors.fill);
     ink(colors.text);
-    doc.text(text.toUpperCase(), x + padX, yPos + 3);
+    doc.text(text.toUpperCase(), x + 12, yPos + 3);
     return width;
   };
 
@@ -232,11 +241,11 @@ export async function generateOrientamaisPlanoPdf({ draft, logoUrl }: GeneratePd
     ensureLineSpace(42);
     ink(C.sub);
     setFont(9.5, true);
-    doc.text(title, M + 18, y + 4);
+    doc.text(title, M + 18, y + 2);
     stroke(C.border);
     doc.setLineWidth(0.8);
-    doc.line(M + 18, y + 12, W - M - 18, y + 12);
-    y += 22;
+    doc.line(M + 18, y + 20, W - M - 18, y + 20);
+    y += 30;
 
     paragraphs.forEach((paragraph, idx) => {
       const lines = measureLines(paragraph, CONTENT_W - 36, bodySize);
@@ -251,25 +260,28 @@ export async function generateOrientamaisPlanoPdf({ draft, logoUrl }: GeneratePd
     });
 
     fill(tone);
-    doc.rect(M + 18, y - 2, 34, 2.5, "F");
-    y += 4;
+    doc.roundedRect(M + 18, y + 2, 42, 4, 2, 2, "F");
+    y += 12;
   };
 
   const sectionTitle = (num: number, title: string, tone: [number, number, number] = C.primary) => {
     ensure(58);
-    y += 8;
+    y += 12;
+    fill([237, 242, 235]);
+    doc.rect(0, y - 10, 22, 26, "F");
     fill(tone);
-    doc.roundedRect(M, y - 16, 28, 28, 7, 7, "F");
+    doc.roundedRect(0, y - 2, 64, 6, 3, 3, "F");
+    doc.roundedRect(18, y - 8, 16, 18, 4, 4, "F");
     ink([255, 255, 255]);
-    setFont(12, true);
-    doc.text(String(num), M + 14, y + 3, { align: "center" });
+    setFont(10, true);
+    doc.text(String(num).padStart(2, "0"), 26, y + 4, { align: "center" });
     ink(C.primaryDark);
-    setFont(15, true);
-    doc.text(title, M + 40, y + 3);
+    setFont(18, true);
+    doc.text(title, M + 18, y + 5);
     stroke(C.border);
     doc.setLineWidth(0.8);
-    doc.line(M, y + 16, W - M, y + 16);
-    y += 28;
+    doc.line(M, y + 26, W - M, y + 26);
+    y += 40;
   };
 
   const card = (x: number, yPos: number, w: number, h: number, fillColor: [number, number, number] = C.paper) => {
@@ -303,11 +315,11 @@ export async function generateOrientamaisPlanoPdf({ draft, logoUrl }: GeneratePd
 
   const renderOpportunity = (o: Oportunidade, index: number) => {
     const badge = impactBadge(o.impacto);
-    const titleLines = measureLines(o.titulo, CONTENT_W - 86, 12.2, true);
+    const titleLines = measureLines(o.titulo, CONTENT_W - 156, 12.2, true);
     const descLines = measureLines(o.descricao, CONTENT_W - 118, 10.1, false);
     const titleBlockH = titleLines.length * 15;
     const descBlockH = descLines.length * 13;
-    const height = 34 + titleBlockH + descBlockH + 26;
+    const height = 34 + titleBlockH + descBlockH + 30;
     ensure(height + 16);
     card(M, y, CONTENT_W, height);
     fill(C.soft);
@@ -316,8 +328,9 @@ export async function generateOrientamaisPlanoPdf({ draft, logoUrl }: GeneratePd
     setFont(11, true);
     doc.text(String(index + 1).padStart(2, "0"), M + 27, y + 31, { align: "center" });
     drawWrappedLines(titleLines, M + 52, y + 28, { size: 12.2, color: C.ink, lineHeight: 15, bold: true });
-    drawBadge(badge.label, W - M - 88, y + 28, { fill: badge.fill, text: badge.text });
-    const descY = y + 28 + titleBlockH + 10;
+    const badgeY = y + 16;
+    drawBadge(badge.label, W - M - 88, badgeY, { fill: badge.fill, text: badge.text });
+    const descY = y + 28 + titleBlockH + 14;
     drawWrappedLines(descLines, M + 52, descY, { size: 10.1, color: C.sub, lineHeight: 13 });
     y += height;
     fill(C.border);
@@ -348,6 +361,14 @@ export async function generateOrientamaisPlanoPdf({ draft, logoUrl }: GeneratePd
       lineHeight: 13,
     });
     y += height;
+  };
+
+  const estimateActionHeight = (a: Acao) => {
+    const titleLines = measureLines(a.titulo, CONTENT_W - 124, 12.4, true);
+    const descLines = measureLines(a.descricao, CONTENT_W - 112, 10.1, false);
+    const metaLine = `Prazo: ${safeText(a.prazo)}   ·   Responsável: ${safeText(a.responsavel)}`;
+    const metaLines = measureLines(metaLine, CONTENT_W - 36, 9.2, false);
+    return 34 + titleLines.length * 15 + metaLines.length * 12 + descLines.length * 13 + 24;
   };
 
   const renderMetric = (m: Metrica, index: number) => {
@@ -451,30 +472,34 @@ export async function generateOrientamaisPlanoPdf({ draft, logoUrl }: GeneratePd
   doc.rect(M + 18, y + resumeHeight - 20, CONTENT_W - 36, 1, "F");
   y += resumeHeight + 12;
 
-  card(M, y, CONTENT_W, 126, C.soft);
+  card(M, y, CONTENT_W, 172, C.soft);
   ink(C.primaryDark);
   setFont(10, true);
   doc.text("VISÃO GERAL", M + 18, y + 20);
-  const summaryX = [M + 18, M + 196, M + 374];
+  const summaryRows = tocItems.map((item) => ({
+    ...item,
+    status: item.on ? "Incluso" : "Pendente",
+    colors: item.on ? { fill: [232, 246, 237] as [number, number, number], text: C.green } : { fill: [241, 245, 249] as [number, number, number], text: C.slate },
+  }));
+  const rowStartY = y + 46;
+  const rowGap = 24;
   tocItems.forEach((item, i) => {
-    const row = i < 3 ? 0 : 1;
-    const col = i < 3 ? i : i - 3;
-    const x = summaryX[col];
-    const yy = y + 42 + row * 32;
-    drawPill(
-      item.on ? "Incluso" : "Pendente",
-      x,
-      yy,
-      item.on ? { fill: [232, 246, 237], text: C.green } : { fill: [241, 245, 249], text: C.slate },
-    );
-    ink(C.sub);
-    setFont(8.4, true);
-    doc.text(item.n, x, yy + 21);
+    const rowY = rowStartY + i * rowGap;
+    if (i > 0) {
+      fill(C.border);
+      doc.rect(M + 18, rowY - 11, CONTENT_W - 36, 1, "F");
+    }
+    fill(C.soft);
+    doc.roundedRect(M + 18, rowY - 10, 26, 20, 8, 8, "F");
+    ink(C.primaryDark);
+    setFont(8.6, true);
+    doc.text(item.n, M + 31, rowY + 3, { align: "center" });
     ink(C.ink);
-    setFont(9.3, true);
-    doc.text(item.title, x + 28, yy + 21);
+    setFont(9.6, true);
+    doc.text(item.title, M + 52, rowY + 3);
+    drawPill(item.on ? "Incluso" : "Pendente", W - M - 98, rowY + 3, summaryRows[i].colors);
   });
-  y += 152;
+  y += 198;
 
   if (draft.desafios_reais || draft.objetivos_organizacionais) {
     sectionTitle(1, "Contexto informado");
@@ -506,6 +531,11 @@ export async function generateOrientamaisPlanoPdf({ draft, logoUrl }: GeneratePd
   }
 
   if ((draft.plano_acoes ?? []).length) {
+    const firstActionHeight = estimateActionHeight((draft.plano_acoes ?? [])[0]);
+    if (y + 40 + firstActionHeight + 18 > maxY()) {
+      page += 1;
+      addContentPage(page);
+    }
     sectionTitle(5, "Plano de ação", C.primary);
     draft.plano_acoes.forEach((a, i) => {
       renderAction(a, i);
