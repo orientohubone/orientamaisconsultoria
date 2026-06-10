@@ -1,5 +1,5 @@
-import { T as TSS_SERVER_FUNCTION, a as createServerFn } from "./server-Dt0K6MSJ.mjs";
-import { r as requireSupabaseAuth } from "./auth-middleware-DMVfZU6L.mjs";
+import { T as TSS_SERVER_FUNCTION, a as createServerFn } from "./server-CjwXMz1z.mjs";
+import { r as requireSupabaseAuth } from "./auth-middleware-CmwTCf3Z.mjs";
 import "../_libs/seroval.mjs";
 import "../_libs/react.mjs";
 import { o as objectType, s as stringType } from "../_libs/zod.mjs";
@@ -27,8 +27,7 @@ import "../_libs/supabase__phoenix.mjs";
 import "../_libs/supabase__storage-js.mjs";
 import "../_libs/iceberg-js.mjs";
 import "../_libs/supabase__auth-js.mjs";
-import "tslib";
-import "../_libs/supabase__functions-js.mjs";
+import "../_libs/@supabase/functions-js.mjs";
 var createServerRpc = (serverFnMeta, splitImportFn) => {
   const url = "/_serverFn/" + serverFnMeta.id;
   return Object.assign(splitImportFn, {

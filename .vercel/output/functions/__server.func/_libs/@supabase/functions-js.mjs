@@ -1,4 +1,45 @@
-import { __awaiter } from "tslib";
+function __rest(source, exclude) {
+  const target = {};
+  if (source == null) return target;
+  for (const key of Object.keys(source)) {
+    if (exclude.indexOf(key) >= 0) continue;
+    target[key] = source[key];
+  }
+  if (Object.getOwnPropertySymbols) {
+    for (const symbol of Object.getOwnPropertySymbols(source)) {
+      if (exclude.indexOf(symbol) >= 0) continue;
+      if (Object.prototype.propertyIsEnumerable.call(source, symbol)) {
+        target[symbol] = source[symbol];
+      }
+    }
+  }
+  return target;
+}
+function __awaiter(thisArg, _arguments, P, generator) {
+  function adopt(value) {
+    return value instanceof P ? value : new P((resolve) => resolve(value));
+  }
+  return new Promise((resolve, reject) => {
+    function fulfilled(value) {
+      try {
+        step(generator.next(value));
+      } catch (error) {
+        reject(error);
+      }
+    }
+    function rejected(value) {
+      try {
+        step(generator.throw(value));
+      } catch (error) {
+        reject(error);
+      }
+    }
+    function step(result) {
+      result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+    }
+    step((generator = generator.apply(thisArg, _arguments || [])).next());
+  });
+}
 const resolveFetch = (customFetch) => {
   if (customFetch) {
     return (...args) => customFetch(...args);
@@ -318,5 +359,6 @@ class FunctionsClient {
   }
 }
 export {
-  FunctionsClient as F
+  FunctionsClient as F,
+  __rest as _
 };

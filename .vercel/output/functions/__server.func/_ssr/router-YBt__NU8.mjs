@@ -134,7 +134,7 @@ const Route$2 = createFileRoute("/login")({
   }),
   component: lazyRouteComponent($$splitComponentImporter$2, "component")
 });
-const $$splitComponentImporter$1 = () => import("./crm-BX_cztg7.mjs");
+const $$splitComponentImporter$1 = () => import("./crm-D8X27mT5.mjs");
 const Route$1 = createFileRoute("/crm")({
   head: () => ({
     meta: [{
