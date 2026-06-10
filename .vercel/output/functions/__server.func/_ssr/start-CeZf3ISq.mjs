@@ -1,4 +1,4 @@
-import { c as createMiddleware } from "./server-Dt0K6MSJ.mjs";
+import { c as createMiddleware } from "./server-CjwXMz1z.mjs";
 import { r as renderErrorPage } from "./index.mjs";
 import { s as supabase } from "./client-CQo1km_T.mjs";
 import "../_libs/seroval.mjs";
@@ -27,8 +27,7 @@ import "../_libs/supabase__phoenix.mjs";
 import "../_libs/supabase__storage-js.mjs";
 import "../_libs/iceberg-js.mjs";
 import "../_libs/supabase__auth-js.mjs";
-import "tslib";
-import "../_libs/supabase__functions-js.mjs";
+import "../_libs/@supabase/functions-js.mjs";
 function dedupeSerializationAdapters(deduped, serializationAdapters) {
   for (let i = 0, len = serializationAdapters.length; i < len; i++) {
     const current = serializationAdapters[i];
