@@ -1,5 +1,5 @@
-import { T as TSS_SERVER_FUNCTION, a as createServerFn } from "./server-CjwXMz1z.mjs";
-import { r as requireSupabaseAuth } from "./auth-middleware-CmwTCf3Z.mjs";
+import { T as TSS_SERVER_FUNCTION, a as createServerFn } from "./server-dreTKZon.mjs";
+import { r as requireSupabaseAuth } from "./auth-middleware-D10c7Ka6.mjs";
 import "../_libs/seroval.mjs";
 import "../_libs/react.mjs";
 import { o as objectType, s as stringType } from "../_libs/zod.mjs";
@@ -87,6 +87,7 @@ function ctx(l) {
   return `Cliente: ${l.nome}
 Tipo de negócio: ${l.tipo_negocio ?? "—"}
 CNPJ: ${l.cnpj ?? "—"}
+Soluções prestadas: ${l.solucoes_prestadas ?? "—"}
 Desafios reais (informados): ${l.desafios_reais ?? "—"}
 Objetivos organizacionais: ${l.objetivos_organizacionais ?? "—"}
 Anotações internas do consultor: ${l.anotacoes ?? "—"}`;
@@ -244,7 +245,7 @@ const generatePlano = createServerFn({
   const json = await callAI({
     messages: [{
       role: "system",
-      content: "Você é o head de execução da OrientoHub. A partir das oportunidades selecionadas, construa um PLANO DE AÇÃO personalizado, com ações claras, objetivas, sequenciais e mensuráveis. Use a ferramenta entregar_plano."
+      content: "Você é o head de execução da OrientoHub. A partir das oportunidades selecionadas, construa um PLANO DE AÇÃO personalizado, com ações claras, objetivas, sequenciais e mensuráveis. Use a ferramenta entregar_plano.\n\nSe ainda não houver um mapeamento claro de soluções prestadas, recursos ou oferta do cliente, comece o plano com uma frente de DISCOVERY para fechar essa lacuna antes de propor execução. Se o mapeamento já existir, siga direto para a priorização das ações."
     }, {
       role: "user",
       content: `${ctx(lead)}

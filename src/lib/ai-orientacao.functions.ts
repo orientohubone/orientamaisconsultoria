@@ -12,6 +12,7 @@ type Lead = {
   whatsapp: string;
   tipo_negocio: string | null;
   cnpj: string | null;
+  solucoes_prestadas: string | null;
   desafios_reais: string | null;
   objetivos_organizacionais: string | null;
   anotacoes: string | null;
@@ -75,6 +76,7 @@ function ctx(l: Lead) {
   return `Cliente: ${l.nome}
 Tipo de negócio: ${l.tipo_negocio ?? "—"}
 CNPJ: ${l.cnpj ?? "—"}
+Soluções prestadas: ${l.solucoes_prestadas ?? "—"}
 Desafios reais (informados): ${l.desafios_reais ?? "—"}
 Objetivos organizacionais: ${l.objetivos_organizacionais ?? "—"}
 Anotações internas do consultor: ${l.anotacoes ?? "—"}`;
@@ -187,7 +189,7 @@ export const generatePlano = createServerFn({ method: "POST" })
         {
           role: "system",
           content:
-            "Você é o head de execução da OrientoHub. A partir das oportunidades selecionadas, construa um PLANO DE AÇÃO personalizado, com ações claras, objetivas, sequenciais e mensuráveis. Use a ferramenta entregar_plano.",
+            "Você é o head de execução da OrientoHub. A partir das oportunidades selecionadas, construa um PLANO DE AÇÃO personalizado, com ações claras, objetivas, sequenciais e mensuráveis. Use a ferramenta entregar_plano.\n\nSe ainda não houver um mapeamento claro de soluções prestadas, recursos ou oferta do cliente, comece o plano com uma frente de DISCOVERY para fechar essa lacuna antes de propor execução. Se o mapeamento já existir, siga direto para a priorização das ações.",
         },
         {
           role: "user",

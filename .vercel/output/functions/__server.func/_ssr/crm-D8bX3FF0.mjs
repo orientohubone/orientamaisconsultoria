@@ -2,11 +2,11 @@ import { r as reactExports, j as jsxRuntimeExports } from "../_libs/react.mjs";
 import { d as useNavigate, L as Link, u as useRouter } from "../_libs/tanstack__react-router.mjs";
 import { m as isRedirect } from "../_libs/tanstack__router-core.mjs";
 import { s as supabase } from "./client-CQo1km_T.mjs";
-import { a as createServerFn, T as TSS_SERVER_FUNCTION, g as getServerFnById } from "./server-CjwXMz1z.mjs";
-import { r as requireSupabaseAuth } from "./auth-middleware-CmwTCf3Z.mjs";
+import { a as createServerFn, T as TSS_SERVER_FUNCTION, g as getServerFnById } from "./server-dreTKZon.mjs";
+import { r as requireSupabaseAuth } from "./auth-middleware-D10c7Ka6.mjs";
 import { l as logoUrl$1 } from "./logo orientamais-BvCW8YDi.mjs";
 import "../_libs/seroval.mjs";
-import { C as ClipboardCheck, S as Search, L as Lightbulb, R as Rocket, a as ChartColumn, b as LogOut, F as Funnel, P as Phone, B as Building2, c as FileDown, X, T as Target, d as Check, e as TrendingUp, f as Plus, g as Trash2, h as Save, i as LoaderCircle, j as Sparkles } from "../_libs/lucide-react.mjs";
+import { C as ClipboardCheck, S as Search, L as Lightbulb, R as Rocket, a as ChartColumn, b as LogOut, F as Funnel, G as GripVertical, P as Phone, B as Building2, M as Minimize2, c as Maximize2, d as FileDown, X, T as Target, e as Check, f as TrendingUp, g as Plus, h as Trash2, i as Save, j as LoaderCircle, k as Sparkles } from "../_libs/lucide-react.mjs";
 import { o as objectType, s as stringType } from "../_libs/zod.mjs";
 import "../_libs/react-dom.mjs";
 import "util";
@@ -486,8 +486,11 @@ async function generateOrientamaisPlanoPdf({ draft, logoUrl: logoUrl2 }) {
     drawPill(item.on ? "Incluso" : "Pendente", W - M - 98, rowY + 3, summaryRows[i].colors);
   });
   y += 198;
-  if (draft.desafios_reais || draft.objetivos_organizacionais) {
+  if (draft.solucoes_prestadas || draft.desafios_reais || draft.objetivos_organizacionais) {
     sectionTitle(1, "Contexto informado");
+    if (draft.solucoes_prestadas) {
+      renderFlowText("Soluções prestadas", draft.solucoes_prestadas, { bodySize: 10.15, lineGap: 4.6, tone: C.primaryDark });
+    }
     if (draft.desafios_reais) {
       renderFlowText("Desafios reais", draft.desafios_reais, { bodySize: 10.15, lineGap: 4.6, tone: C.accent });
     }
@@ -612,6 +615,9 @@ function normalizePrioridade(prioridade) {
 }
 function getPrioridadeStyles(prioridade) {
   return PRIORIDADE_STYLES[normalizePrioridade(prioridade)] ?? PRIORIDADE_STYLES.default;
+}
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
 }
 function CrmPage() {
   const navigate = useNavigate();
@@ -792,6 +798,14 @@ function LeadDrawer({
   const [tab, setTab] = reactExports.useState(lead.stage);
   const [aiLoading, setAiLoading] = reactExports.useState(null);
   const [aiError, setAiError] = reactExports.useState(null);
+  const [drawerWidth, setDrawerWidth] = reactExports.useState(() => {
+    if (typeof window === "undefined") return 860;
+    return clamp(Math.round(window.innerWidth * 0.55), 560, 1120);
+  });
+  const [isMaximized, setIsMaximized] = reactExports.useState(false);
+  const [isResizing, setIsResizing] = reactExports.useState(false);
+  const resizeRef = reactExports.useRef(null);
+  const needsDiscovery = !draft.solucoes_prestadas?.trim();
   const runEnrich = useServerFn(enrichDiagnostico);
   const runAnalise = useServerFn(generateAnalise);
   const runPlano = useServerFn(generatePlano);
@@ -806,6 +820,7 @@ function LeadDrawer({
       whatsapp: draft.whatsapp,
       tipo_negocio: draft.tipo_negocio,
       cnpj: draft.cnpj,
+      solucoes_prestadas: draft.solucoes_prestadas,
       desafios_reais: draft.desafios_reais,
       objetivos_organizacionais: draft.objetivos_organizacionais,
       anotacoes: draft.anotacoes,
@@ -851,11 +866,59 @@ function LeadDrawer({
     return;
   }
   const waLink = `https://wa.me/${draft.whatsapp.replace(/\D/g, "")}`;
+  reactExports.useEffect(() => {
+    if (isMaximized || typeof window === "undefined") return;
+    const next = clamp(drawerWidth, 560, Math.min(1120, window.innerWidth - 24));
+    if (next !== drawerWidth) setDrawerWidth(next);
+  }, [drawerWidth, isMaximized]);
+  reactExports.useEffect(() => {
+    if (!isResizing || typeof window === "undefined") return;
+    const onPointerMove = (event) => {
+      const nextWidth = clamp(window.innerWidth - event.clientX, 560, Math.min(1120, window.innerWidth - 24));
+      setDrawerWidth(nextWidth);
+    };
+    const onPointerUp = () => {
+      resizeRef.current = null;
+      setIsResizing(false);
+      document.body.style.userSelect = "";
+      document.body.style.cursor = "";
+    };
+    document.body.style.userSelect = "none";
+    document.body.style.cursor = "ew-resize";
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      document.body.style.userSelect = "";
+      document.body.style.cursor = "";
+    };
+  }, [isResizing]);
+  function startResize(event) {
+    if (isMaximized) return;
+    resizeRef.current = {
+      startX: event.clientX,
+      startWidth: drawerWidth
+    };
+    setIsResizing(true);
+    event.preventDefault();
+  }
+  function toggleMaximized() {
+    setIsMaximized((current) => {
+      if (!current && typeof window !== "undefined") {
+        setDrawerWidth(Math.min(window.innerWidth - 24, 1280));
+      }
+      return !current;
+    });
+  }
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "fixed inset-0 z-50 flex justify-end", onClick: onClose, children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute inset-0 bg-background/70 backdrop-blur-sm" }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("aside", { onClick: (e) => e.stopPropagation(), className: "relative w-full max-w-2xl bg-card border-l border-border h-full flex flex-col", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("aside", { onClick: (e) => e.stopPropagation(), className: "relative w-full bg-card border-l border-border h-full flex flex-col shadow-2xl", style: {
+      width: isMaximized ? "min(100vw, 1280px)" : `${drawerWidth}px`
+    }, children: [
+      !isMaximized && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { onPointerDown: startResize, className: "absolute left-0 top-0 h-full w-4 cursor-ew-resize touch-none", "aria-label": "Redimensionar painel", title: "Arraste para redimensionar", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute left-1 top-1/2 -translate-y-1/2 flex h-14 w-2 items-center justify-center rounded-full border border-border bg-background/80 text-muted-foreground shadow-sm", children: /* @__PURE__ */ jsxRuntimeExports.jsx(GripVertical, { className: "h-4 w-4" }) }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "p-6 pb-0 shrink-0 border-b border-border bg-card", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start justify-between gap-3", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start justify-between gap-3 pl-2", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs uppercase tracking-widest text-muted-foreground", children: "Cliente" }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-2xl font-bold mt-1", children: lead.nome }),
@@ -872,6 +935,10 @@ function LeadDrawer({
             ] })
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { onClick: toggleMaximized, title: isMaximized ? "Restaurar largura" : "Expandir painel", className: "inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-semibold hover:border-primary hover:text-primary", children: [
+              isMaximized ? /* @__PURE__ */ jsxRuntimeExports.jsx(Minimize2, { className: "h-4 w-4" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Maximize2, { className: "h-4 w-4" }),
+              isMaximized ? "Restaurar" : "Expandir"
+            ] }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { onClick: exportPDF, title: "Exportar PDF", className: "inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-semibold hover:border-primary hover:text-primary", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(FileDown, { className: "h-4 w-4" }),
               " PDF"
@@ -879,12 +946,12 @@ function LeadDrawer({
             /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: onClose, className: "p-2 rounded-lg hover:bg-secondary", children: /* @__PURE__ */ jsxRuntimeExports.jsx(X, { className: "h-5 w-5" }) })
           ] })
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-6 -mb-px flex gap-1 overflow-x-auto", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-6 -mb-px flex gap-1 overflow-x-auto pl-2", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(TabBtn, { active: tab === "dados", onClick: () => setTab("dados"), label: "Dados" }),
           STAGES.map((s) => /* @__PURE__ */ jsxRuntimeExports.jsx(TabBtn, { active: tab === s.value, onClick: () => setTab(s.value), label: s.label, icon: /* @__PURE__ */ jsxRuntimeExports.jsx(s.icon, { className: "h-3.5 w-3.5" }) }, s.value))
         ] })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "p-6 space-y-5 flex-1 overflow-y-auto", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "p-6 space-y-5 flex-1 overflow-y-auto pl-8", children: [
         aiError && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive", children: aiError }),
         tab === "dados" && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx(Field, { label: "Etapa do funil", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-5 gap-1.5", children: STAGES.map((s) => /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { onClick: () => setDraft({
@@ -913,6 +980,10 @@ function LeadDrawer({
               cnpj: v
             }) }) })
           ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Field, { label: "Soluções prestadas", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Textarea, { rows: 4, value: draft.solucoes_prestadas ?? "", onChange: (v) => setDraft({
+            ...draft,
+            solucoes_prestadas: v
+          }) }) }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(Field, { label: "Desafios reais", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Textarea, { value: draft.desafios_reais ?? "", onChange: (v) => setDraft({
             ...draft,
             desafios_reais: v
@@ -986,44 +1057,69 @@ function LeadDrawer({
             ] })
           ] })
         ] }),
-        tab === "estrategia" && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(AIButton, { loading: aiLoading === "plano", disabled: (draft.oportunidades ?? []).filter((o) => o.selecionada).length === 0, onClick: () => runAI("plano", () => runPlano({
-            data: {
-              leadId: lead.id
-            }
-          }), (r) => setDraft({
-            ...draft,
-            plano_acoes: r.plano_acoes,
-            stage: "estrategia"
-          })), label: draft.plano_acoes?.length ? "Reprocessar plano" : "Gerar plano de ação personalizado", hint: "Com base nas oportunidades selecionadas" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
-            (draft.plano_acoes ?? []).length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-muted-foreground", children: "Nenhuma ação ainda." }),
-            (draft.plano_acoes ?? []).map((a, i) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rounded-lg border border-border p-3", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between gap-2", children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "font-semibold text-sm", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-primary", children: [
-                    i + 1,
-                    "."
-                  ] }),
-                  " ",
-                  a.titulo
-                ] }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: `inline-flex items-center rounded-full border px-1.5 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider ${getPrioridadeStyles(a.prioridade).badge}`, children: getPrioridadeStyles(a.prioridade).label })
+        tab === "estrategia" && /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid gap-4", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rounded-2xl border border-border bg-card/60 p-4", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between gap-3", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-[0.65rem] uppercase tracking-widest text-muted-foreground", children: "Discovery" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "mt-1 font-semibold text-sm", children: "Mapeamento de oferta e contexto" })
               ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-[0.65rem] uppercase tracking-wider text-muted-foreground mt-1", children: [
-                "Prazo: ",
-                a.prazo,
-                " · Responsável: ",
-                a.responsavel
-              ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs text-muted-foreground mt-2 whitespace-pre-wrap", children: a.descricao })
-            ] }, i))
+              /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: () => setTab("dados"), className: "rounded-full border border-border px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-wider text-muted-foreground hover:border-primary hover:text-primary transition", children: "Abrir dados" })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-4 rounded-xl border border-dashed border-border bg-background/50 p-4", children: needsDiscovery ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm font-semibold text-foreground", children: "Discovery pendente" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-1 text-xs text-muted-foreground", children: "Quando o cliente ainda não tiver esse mapeamento, usamos diagnóstico e análise para seguir com a estratégia e deixamos esse bloco como contexto opcional." })
+            ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm font-semibold text-foreground", children: "Discovery registrado" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-1 whitespace-pre-wrap text-xs text-muted-foreground", children: draft.solucoes_prestadas })
+            ] }) })
           ] }),
-          draft.plano_acoes?.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { onClick: exportPDF, className: "w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground font-bold px-4 py-3 hover:opacity-90", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(FileDown, { className: "h-4 w-4" }),
-            " Gerar PDF para o empreendedor"
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rounded-2xl border border-border bg-card/60 p-4", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between gap-3", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-[0.65rem] uppercase tracking-widest text-muted-foreground", children: "Estratégia" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "mt-1 font-semibold text-sm", children: "Plano gerado a partir do diagnóstico e da análise" })
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-wider text-primary", children: "Etapa 3" })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-4", children: /* @__PURE__ */ jsxRuntimeExports.jsx(AIButton, { loading: aiLoading === "plano", disabled: (draft.oportunidades ?? []).filter((o) => o.selecionada).length === 0, onClick: () => runAI("plano", () => runPlano({
+              data: {
+                leadId: lead.id
+              }
+            }), (r) => setDraft({
+              ...draft,
+              plano_acoes: r.plano_acoes,
+              stage: "estrategia"
+            })), label: draft.plano_acoes?.length ? "Reprocessar plano" : "Gerar plano de ação personalizado", hint: needsDiscovery ? "Começa pelo discovery quando o mapa ainda não está fechado" : "Com base nas oportunidades selecionadas" }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-4 space-y-2", children: [
+              (draft.plano_acoes ?? []).length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-muted-foreground", children: "Nenhuma ação ainda." }),
+              (draft.plano_acoes ?? []).map((a, i) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rounded-lg border border-border p-3", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between gap-2", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "font-semibold text-sm", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-primary", children: [
+                      i + 1,
+                      "."
+                    ] }),
+                    " ",
+                    a.titulo
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: `inline-flex items-center rounded-full border px-1.5 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider ${getPrioridadeStyles(a.prioridade).badge}`, children: getPrioridadeStyles(a.prioridade).label })
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-[0.65rem] uppercase tracking-wider text-muted-foreground mt-1", children: [
+                  "Prazo: ",
+                  a.prazo,
+                  " · Responsável: ",
+                  a.responsavel
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs text-muted-foreground mt-2 whitespace-pre-wrap", children: a.descricao })
+              ] }, i))
+            ] }),
+            draft.plano_acoes?.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { onClick: exportPDF, className: "mt-4 w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground font-bold px-4 py-3 hover:opacity-90", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(FileDown, { className: "h-4 w-4" }),
+              " Gerar PDF para o empreendedor"
+            ] })
           ] })
-        ] }),
+        ] }) }),
         tab === "execucao" && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rounded-lg border border-border p-3 text-xs text-muted-foreground", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "font-semibold text-foreground mb-1 flex items-center gap-1.5", children: [

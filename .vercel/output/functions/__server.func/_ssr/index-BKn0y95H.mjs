@@ -2,7 +2,7 @@ import { r as reactExports, j as jsxRuntimeExports } from "../_libs/react.mjs";
 import { l as logoUrl } from "./logo orientamais-BvCW8YDi.mjs";
 import { s as supabase } from "./client-CQo1km_T.mjs";
 import { L as Link } from "../_libs/tanstack__react-router.mjs";
-import { A as ArrowRight, k as Crosshair, M as Megaphone, U as Users, e as TrendingUp, l as ChartPie, C as ClipboardCheck, S as Search, L as Lightbulb, R as Rocket, a as ChartColumn, m as ChevronRight, n as CircleCheck } from "../_libs/lucide-react.mjs";
+import { A as ArrowRight, l as Crosshair, m as Megaphone, U as Users, f as TrendingUp, n as ChartPie, C as ClipboardCheck, S as Search, L as Lightbulb, R as Rocket, a as ChartColumn, o as ChevronRight, p as CircleCheck } from "../_libs/lucide-react.mjs";
 import "../_libs/supabase__supabase-js.mjs";
 import "../_libs/supabase__postgrest-js.mjs";
 import "../_libs/supabase__realtime-js.mjs";
@@ -59,8 +59,8 @@ const etapas = [{
 }, {
   n: "3",
   icon: Lightbulb,
-  title: "Estratégia",
-  desc: "Plano personalizado com ações claras e objetivas."
+  title: "Discovery",
+  desc: "Mapeamos soluções prestadas, recursos e prioridades para sustentar a estratégia."
 }, {
   n: "4",
   icon: Rocket,
@@ -84,6 +84,7 @@ function Index() {
     whatsapp: "",
     tipo_negocio: "",
     cnpj: "",
+    solucoes_prestadas: "",
     desafios_reais: "",
     objetivos_organizacionais: ""
   });
@@ -98,6 +99,7 @@ function Index() {
       whatsapp: form.whatsapp.trim(),
       tipo_negocio: form.tipo_negocio.trim() || null,
       cnpj: form.cnpj.trim() || null,
+      solucoes_prestadas: form.solucoes_prestadas.trim() || null,
       desafios_reais: form.desafios_reais.trim() || null,
       objetivos_organizacionais: form.objetivos_organizacionais.trim() || null
     });
@@ -266,6 +268,13 @@ function Index() {
                 cnpj: e.target.value
               }), spellCheck: false, autoCapitalize: "off", autoCorrect: "off", className: "mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none", placeholder: "Opcional" })
             ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "text-xs font-bold uppercase tracking-wider text-muted-foreground", children: "Soluções prestadas" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("textarea", { rows: 2, value: form.solucoes_prestadas, onChange: (e) => setForm({
+              ...form,
+              solucoes_prestadas: e.target.value
+            }), spellCheck: false, autoCapitalize: "off", autoCorrect: "off", className: "mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none resize-none", placeholder: "Liste as soluções que você já entrega hoje" })
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "text-xs font-bold uppercase tracking-wider text-muted-foreground", children: "Desafios reais" }),

@@ -30,6 +30,7 @@ export type Database = {
           plano_acoes: Json
           resultados_metricas: Json
           resultados_notas: string | null
+          solucoes_prestadas: string | null
           stage: Database["public"]["Enums"]["lead_stage"]
           tipo_negocio: string | null
           updated_at: string
@@ -50,6 +51,7 @@ export type Database = {
           plano_acoes?: Json
           resultados_metricas?: Json
           resultados_notas?: string | null
+          solucoes_prestadas?: string | null
           stage?: Database["public"]["Enums"]["lead_stage"]
           tipo_negocio?: string | null
           updated_at?: string
@@ -70,6 +72,7 @@ export type Database = {
           plano_acoes?: Json
           resultados_metricas?: Json
           resultados_notas?: string | null
+          solucoes_prestadas?: string | null
           stage?: Database["public"]["Enums"]["lead_stage"]
           tipo_negocio?: string | null
           updated_at?: string

@@ -7,6 +7,7 @@ type LeadPdf = {
   whatsapp: string;
   tipo_negocio: string | null;
   cnpj: string | null;
+  solucoes_prestadas: string | null;
   desafios_reais: string | null;
   objetivos_organizacionais: string | null;
   diagnostico_ai: string | null;
@@ -38,6 +39,7 @@ type GeneratePdfParams = {
     | "whatsapp"
     | "tipo_negocio"
     | "cnpj"
+    | "solucoes_prestadas"
     | "desafios_reais"
     | "objetivos_organizacionais"
     | "diagnostico_ai"
@@ -501,11 +503,14 @@ export async function generateOrientamaisPlanoPdf({ draft, logoUrl }: GeneratePd
   });
   y += 198;
 
-  if (draft.desafios_reais || draft.objetivos_organizacionais) {
-    sectionTitle(1, "Contexto informado");
-    if (draft.desafios_reais) {
-      renderFlowText("Desafios reais", draft.desafios_reais, { bodySize: 10.15, lineGap: 4.6, tone: C.accent });
-    }
+    if (draft.solucoes_prestadas || draft.desafios_reais || draft.objetivos_organizacionais) {
+      sectionTitle(1, "Contexto informado");
+      if (draft.solucoes_prestadas) {
+        renderFlowText("Soluções prestadas", draft.solucoes_prestadas, { bodySize: 10.15, lineGap: 4.6, tone: C.primaryDark });
+      }
+      if (draft.desafios_reais) {
+        renderFlowText("Desafios reais", draft.desafios_reais, { bodySize: 10.15, lineGap: 4.6, tone: C.accent });
+      }
     if (draft.objetivos_organizacionais) {
       renderFlowText("Objetivos organizacionais", draft.objetivos_organizacionais, { bodySize: 10.15, lineGap: 4.6, tone: C.primary });
     }

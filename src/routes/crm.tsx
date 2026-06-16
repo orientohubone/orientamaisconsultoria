@@ -1,11 +1,11 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ClipboardCheck, Search, Lightbulb, Rocket, BarChart3, LogOut, X, Save,
   Trash2, Phone, Building2, Filter, Sparkles, FileDown, Loader2, Plus,
-  Check, Target, TrendingUp,
+  Check, Target, TrendingUp, Maximize2, Minimize2, GripVertical,
 } from "lucide-react";
 import {
   enrichDiagnostico, generateAnalise, generatePlano, suggestMetricas,
@@ -27,6 +27,7 @@ type Lead = {
   whatsapp: string;
   tipo_negocio: string | null;
   cnpj: string | null;
+  solucoes_prestadas: string | null;
   desafios_reais: string | null;
   objetivos_organizacionais: string | null;
   anotacoes: string | null;
@@ -109,6 +110,10 @@ function normalizePrioridade(prioridade: Prioridade) {
 
 function getPrioridadeStyles(prioridade: Prioridade) {
   return PRIORIDADE_STYLES[normalizePrioridade(prioridade)] ?? PRIORIDADE_STYLES.default;
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
 }
 
 function CrmPage() {
@@ -311,6 +316,14 @@ function LeadDrawer({ lead, onClose, onSaved, onDeleted }: { lead: Lead; onClose
   const [tab, setTab] = useState<"dados" | Stage>(lead.stage);
   const [aiLoading, setAiLoading] = useState<string | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [drawerWidth, setDrawerWidth] = useState(() => {
+    if (typeof window === "undefined") return 860;
+    return clamp(Math.round(window.innerWidth * 0.55), 560, 1120);
+  });
+  const [isMaximized, setIsMaximized] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const resizeRef = useRef<{ startX: number; startWidth: number } | null>(null);
+  const needsDiscovery = !draft.solucoes_prestadas?.trim();
 
   const runEnrich = useServerFn(enrichDiagnostico);
   const runAnalise = useServerFn(generateAnalise);
@@ -326,6 +339,7 @@ function LeadDrawer({ lead, onClose, onSaved, onDeleted }: { lead: Lead; onClose
         whatsapp: draft.whatsapp,
         tipo_negocio: draft.tipo_negocio,
         cnpj: draft.cnpj,
+        solucoes_prestadas: draft.solucoes_prestadas,
         desafios_reais: draft.desafios_reais,
         objetivos_organizacionais: draft.objetivos_organizacionais,
         anotacoes: draft.anotacoes,
@@ -880,12 +894,78 @@ function LeadDrawer({ lead, onClose, onSaved, onDeleted }: { lead: Lead; onClose
 
   const waLink = `https://wa.me/${draft.whatsapp.replace(/\D/g, "")}`;
 
+  useEffect(() => {
+    if (isMaximized || typeof window === "undefined") return;
+    const next = clamp(drawerWidth, 560, Math.min(1120, window.innerWidth - 24));
+    if (next !== drawerWidth) setDrawerWidth(next);
+  }, [drawerWidth, isMaximized]);
+
+  useEffect(() => {
+    if (!isResizing || typeof window === "undefined") return;
+
+    const onPointerMove = (event: PointerEvent) => {
+      const nextWidth = clamp(window.innerWidth - event.clientX, 560, Math.min(1120, window.innerWidth - 24));
+      setDrawerWidth(nextWidth);
+    };
+
+    const onPointerUp = () => {
+      resizeRef.current = null;
+      setIsResizing(false);
+      document.body.style.userSelect = "";
+      document.body.style.cursor = "";
+    };
+
+    document.body.style.userSelect = "none";
+    document.body.style.cursor = "ew-resize";
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      document.body.style.userSelect = "";
+      document.body.style.cursor = "";
+    };
+  }, [isResizing]);
+
+  function startResize(event: React.PointerEvent<HTMLDivElement>) {
+    if (isMaximized) return;
+    resizeRef.current = { startX: event.clientX, startWidth: drawerWidth };
+    setIsResizing(true);
+    event.preventDefault();
+  }
+
+  function toggleMaximized() {
+    setIsMaximized((current) => {
+      if (!current && typeof window !== "undefined") {
+        setDrawerWidth(Math.min(window.innerWidth - 24, 1280));
+      }
+      return !current;
+    });
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
       <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
-      <aside onClick={(e) => e.stopPropagation()} className="relative w-full max-w-2xl bg-card border-l border-border h-full flex flex-col">
+      <aside
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full bg-card border-l border-border h-full flex flex-col shadow-2xl"
+        style={{ width: isMaximized ? "min(100vw, 1280px)" : `${drawerWidth}px` }}
+      >
+        {!isMaximized && (
+          <div
+            onPointerDown={startResize}
+            className="absolute left-0 top-0 h-full w-4 cursor-ew-resize touch-none"
+            aria-label="Redimensionar painel"
+            title="Arraste para redimensionar"
+          >
+            <div className="absolute left-1 top-1/2 -translate-y-1/2 flex h-14 w-2 items-center justify-center rounded-full border border-border bg-background/80 text-muted-foreground shadow-sm">
+              <GripVertical className="h-4 w-4" />
+            </div>
+          </div>
+        )}
         <div className="p-6 pb-0 shrink-0 border-b border-border bg-card">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start justify-between gap-3 pl-2">
           <div>
             <div className="text-xs uppercase tracking-widest text-muted-foreground">Cliente</div>
             <h2 className="text-2xl font-bold mt-1">{lead.nome}</h2>
@@ -901,13 +981,17 @@ function LeadDrawer({ lead, onClose, onSaved, onDeleted }: { lead: Lead; onClose
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <button onClick={toggleMaximized} title={isMaximized ? "Restaurar largura" : "Expandir painel"} className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-semibold hover:border-primary hover:text-primary">
+              {isMaximized ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              {isMaximized ? "Restaurar" : "Expandir"}
+            </button>
             <button onClick={exportPDF} title="Exportar PDF" className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-semibold hover:border-primary hover:text-primary">
               <FileDown className="h-4 w-4" /> PDF
             </button>
             <button onClick={onClose} className="p-2 rounded-lg hover:bg-secondary"><X className="h-5 w-5" /></button>
           </div>
         </div>
-        <div className="mt-6 -mb-px flex gap-1 overflow-x-auto">
+        <div className="mt-6 -mb-px flex gap-1 overflow-x-auto pl-2">
           <TabBtn active={tab === "dados"} onClick={() => setTab("dados")} label="Dados" />
           {STAGES.map((s) => (
             <TabBtn key={s.value} active={tab === s.value} onClick={() => setTab(s.value)} label={s.label} icon={<s.icon className="h-3.5 w-3.5" />} />
@@ -915,7 +999,7 @@ function LeadDrawer({ lead, onClose, onSaved, onDeleted }: { lead: Lead; onClose
         </div>
         </div>
 
-        <div className="p-6 space-y-5 flex-1 overflow-y-auto">
+        <div className="p-6 space-y-5 flex-1 overflow-y-auto pl-8">
           {aiError && <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">{aiError}</div>}
 
           {tab === "dados" && (
@@ -936,6 +1020,9 @@ function LeadDrawer({ lead, onClose, onSaved, onDeleted }: { lead: Lead; onClose
                 <Field label="Tipo de negócio"><Input value={draft.tipo_negocio ?? ""} onChange={(v) => setDraft({ ...draft, tipo_negocio: v })} /></Field>
                 <Field label="CNPJ"><Input value={draft.cnpj ?? ""} onChange={(v) => setDraft({ ...draft, cnpj: v })} /></Field>
               </div>
+              <Field label="Soluções prestadas">
+                <Textarea rows={4} value={draft.solucoes_prestadas ?? ""} onChange={(v) => setDraft({ ...draft, solucoes_prestadas: v })} />
+              </Field>
               <Field label="Desafios reais"><Textarea value={draft.desafios_reais ?? ""} onChange={(v) => setDraft({ ...draft, desafios_reais: v })} /></Field>
               <Field label="Objetivos organizacionais"><Textarea value={draft.objetivos_organizacionais ?? ""} onChange={(v) => setDraft({ ...draft, objetivos_organizacionais: v })} /></Field>
             </>
@@ -993,31 +1080,78 @@ function LeadDrawer({ lead, onClose, onSaved, onDeleted }: { lead: Lead; onClose
 
           {tab === "estrategia" && (
             <>
-              <AIButton loading={aiLoading === "plano"}
-                disabled={(draft.oportunidades ?? []).filter((o) => o.selecionada).length === 0}
-                onClick={() => runAI("plano", () => runPlano({ data: { leadId: lead.id } }), (r) => setDraft({ ...draft, plano_acoes: r.plano_acoes, stage: "estrategia" }))}
-                label={draft.plano_acoes?.length ? "Reprocessar plano" : "Gerar plano de ação personalizado"}
-                hint="Com base nas oportunidades selecionadas" />
-              <div className="space-y-2">
-                {(draft.plano_acoes ?? []).length === 0 && <p className="text-xs text-muted-foreground">Nenhuma ação ainda.</p>}
-                {(draft.plano_acoes ?? []).map((a, i) => (
-                  <div key={i} className="rounded-lg border border-border p-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="font-semibold text-sm"><span className="text-primary">{i + 1}.</span> {a.titulo}</div>
-                      <span className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider ${getPrioridadeStyles(a.prioridade).badge}`}>
-                        {getPrioridadeStyles(a.prioridade).label}
-                      </span>
+              <div className="grid gap-4">
+                <div className="rounded-2xl border border-border bg-card/60 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-[0.65rem] uppercase tracking-widest text-muted-foreground">Discovery</div>
+                      <h3 className="mt-1 font-semibold text-sm">Mapeamento de oferta e contexto</h3>
                     </div>
-                    <div className="text-[0.65rem] uppercase tracking-wider text-muted-foreground mt-1">Prazo: {a.prazo} · Responsável: {a.responsavel}</div>
-                    <div className="text-xs text-muted-foreground mt-2 whitespace-pre-wrap">{a.descricao}</div>
+                    <button
+                      onClick={() => setTab("dados")}
+                      className="rounded-full border border-border px-3 py-1.5 text-[0.65rem] font-semibold uppercase tracking-wider text-muted-foreground hover:border-primary hover:text-primary transition"
+                    >
+                      Abrir dados
+                    </button>
                   </div>
-                ))}
+                  <div className="mt-4 rounded-xl border border-dashed border-border bg-background/50 p-4">
+                    {needsDiscovery ? (
+                      <>
+                        <p className="text-sm font-semibold text-foreground">Discovery pendente</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Quando o cliente ainda não tiver esse mapeamento, usamos diagnóstico e análise para seguir com a estratégia e deixamos esse bloco como contexto opcional.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm font-semibold text-foreground">Discovery registrado</p>
+                        <p className="mt-1 whitespace-pre-wrap text-xs text-muted-foreground">
+                          {draft.solucoes_prestadas}
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-border bg-card/60 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-[0.65rem] uppercase tracking-widest text-muted-foreground">Estratégia</div>
+                      <h3 className="mt-1 font-semibold text-sm">Plano gerado a partir do diagnóstico e da análise</h3>
+                    </div>
+                    <span className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-wider text-primary">
+                      Etapa 3
+                    </span>
+                  </div>
+                  <div className="mt-4">
+                    <AIButton loading={aiLoading === "plano"}
+                      disabled={(draft.oportunidades ?? []).filter((o) => o.selecionada).length === 0}
+                      onClick={() => runAI("plano", () => runPlano({ data: { leadId: lead.id } }), (r) => setDraft({ ...draft, plano_acoes: r.plano_acoes, stage: "estrategia" }))}
+                      label={draft.plano_acoes?.length ? "Reprocessar plano" : "Gerar plano de ação personalizado"}
+                      hint={needsDiscovery ? "Começa pelo discovery quando o mapa ainda não está fechado" : "Com base nas oportunidades selecionadas"} />
+                  </div>
+                  <div className="mt-4 space-y-2">
+                    {(draft.plano_acoes ?? []).length === 0 && <p className="text-xs text-muted-foreground">Nenhuma ação ainda.</p>}
+                    {(draft.plano_acoes ?? []).map((a, i) => (
+                      <div key={i} className="rounded-lg border border-border p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="font-semibold text-sm"><span className="text-primary">{i + 1}.</span> {a.titulo}</div>
+                          <span className={`inline-flex items-center rounded-full border px-1.5 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider ${getPrioridadeStyles(a.prioridade).badge}`}>
+                            {getPrioridadeStyles(a.prioridade).label}
+                          </span>
+                        </div>
+                        <div className="text-[0.65rem] uppercase tracking-wider text-muted-foreground mt-1">Prazo: {a.prazo} · Responsável: {a.responsavel}</div>
+                        <div className="text-xs text-muted-foreground mt-2 whitespace-pre-wrap">{a.descricao}</div>
+                      </div>
+                    ))}
+                  </div>
+                  {draft.plano_acoes?.length > 0 && (
+                    <button onClick={exportPDF} className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground font-bold px-4 py-3 hover:opacity-90">
+                      <FileDown className="h-4 w-4" /> Gerar PDF para o empreendedor
+                    </button>
+                  )}
+                </div>
               </div>
-              {draft.plano_acoes?.length > 0 && (
-                <button onClick={exportPDF} className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground font-bold px-4 py-3 hover:opacity-90">
-                  <FileDown className="h-4 w-4" /> Gerar PDF para o empreendedor
-                </button>
-              )}
             </>
           )}
 

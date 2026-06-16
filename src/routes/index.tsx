@@ -29,7 +29,7 @@ const solucoes = [
 const etapas = [
   { n: "1", icon: ClipboardCheck, title: "Diagnóstico", desc: "Entendemos seu negócio e os desafios reais." },
   { n: "2", icon: Search, title: "Análise", desc: "Mergulho profundo para encontrar oportunidades." },
-  { n: "3", icon: Lightbulb, title: "Estratégia", desc: "Plano personalizado com ações claras e objetivas." },
+  { n: "3", icon: Lightbulb, title: "Discovery", desc: "Mapeamos soluções prestadas, recursos e prioridades para sustentar a estratégia." },
   { n: "4", icon: Rocket, title: "Execução", desc: "Implementação com orientação prática." },
   { n: "5", icon: BarChart3, title: "Resultados", desc: "Acompanhamento para garantir crescimento." },
 ];
@@ -49,6 +49,7 @@ function Index() {
     whatsapp: "",
     tipo_negocio: "",
     cnpj: "",
+    solucoes_prestadas: "",
     desafios_reais: "",
     objetivos_organizacionais: "",
   });
@@ -62,6 +63,7 @@ function Index() {
       whatsapp: form.whatsapp.trim(),
       tipo_negocio: form.tipo_negocio.trim() || null,
       cnpj: form.cnpj.trim() || null,
+      solucoes_prestadas: form.solucoes_prestadas.trim() || null,
       desafios_reais: form.desafios_reais.trim() || null,
       objetivos_organizacionais: form.objetivos_organizacionais.trim() || null,
     });
@@ -237,6 +239,10 @@ function Index() {
                     <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">CNPJ</label>
                     <input value={form.cnpj} onChange={(e) => setForm({ ...form, cnpj: e.target.value })} spellCheck={false} autoCapitalize="off" autoCorrect="off" className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none" placeholder="Opcional" />
                   </div>
+                </div>
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Soluções prestadas</label>
+                  <textarea rows={2} value={form.solucoes_prestadas} onChange={(e) => setForm({ ...form, solucoes_prestadas: e.target.value })} spellCheck={false} autoCapitalize="off" autoCorrect="off" className="mt-1 w-full rounded-lg bg-input border border-border px-4 py-3 text-sm focus:border-primary focus:outline-none resize-none" placeholder="Liste as soluções que você já entrega hoje" />
                 </div>
                 <div>
                   <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Desafios reais</label>
