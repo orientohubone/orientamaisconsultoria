@@ -770,7 +770,7 @@ function CrmSidebar() {
     Sidebar,
     {
       collapsible: "icon",
-      className: "!bg-[linear-gradient(180deg,rgba(17,38,33,0.98),rgba(9,22,19,0.98))] !text-[#f2f7f4] border-r border-emerald-950/40",
+      className: "[&_[data-sidebar=sidebar]]:!bg-[linear-gradient(180deg,rgba(17,38,33,0.98),rgba(9,22,19,0.98))] [&_[data-sidebar=sidebar]]:!text-[#f2f7f4] [&_[data-sidebar=sidebar]]:border-r [&_[data-sidebar=sidebar]]:border-emerald-950/40",
       children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(SidebarHeader, { className: "border-b border-sidebar-border", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Link, { to: "/", className: "flex items-center gap-2 px-2 py-1.5", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("img", { src: logoUrl, alt: "Orientamais", className: "h-8 w-auto shrink-0" }),
@@ -806,20 +806,37 @@ function CrmShell({
   actions,
   children
 }) {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(SidebarProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-h-screen flex w-full", style: { background: "var(--gradient-hero)" }, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx(CrmSidebar, {}),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 flex flex-col min-w-0", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "h-14 flex items-center gap-3 px-4 border-b border-border/40 bg-background/40 backdrop-blur sticky top-0 z-10", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(SidebarTrigger, {}),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 min-w-0", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-sm font-bold truncate", children: title }),
-          subtitle && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-muted-foreground truncate", children: subtitle })
-        ] }),
-        actions
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("main", { className: "flex-1 overflow-auto", children })
-    ] })
-  ] }) });
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(SidebarProvider, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "div",
+    {
+      className: "min-h-screen flex w-full",
+      style: {
+        background: "var(--gradient-hero)",
+        "--sidebar": "oklch(0.22 0.035 171)",
+        "--sidebar-foreground": "oklch(0.98 0.01 170)",
+        "--sidebar-primary": "oklch(0.74 0.13 168)",
+        "--sidebar-primary-foreground": "oklch(0.2 0.03 171)",
+        "--sidebar-accent": "oklch(0.28 0.03 171)",
+        "--sidebar-accent-foreground": "oklch(0.98 0.01 170)",
+        "--sidebar-border": "oklch(0.34 0.04 171 / 0.55)",
+        "--sidebar-ring": "oklch(0.74 0.13 168)"
+      },
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(CrmSidebar, {}),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 flex flex-col min-w-0", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "h-14 flex items-center gap-3 px-4 border-b border-border/40 bg-background/40 backdrop-blur sticky top-0 z-10", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(SidebarTrigger, {}),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 min-w-0", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-sm font-bold truncate", children: title }),
+              subtitle && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[0.7rem] text-muted-foreground truncate", children: subtitle })
+            ] }),
+            actions
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("main", { className: "flex-1 overflow-auto", children })
+        ] })
+      ]
+    }
+  ) });
 }
 const PAYMENT_LABELS = {
   a_vista: "À vista",
@@ -878,6 +895,7 @@ export {
   PROPOSAL_STATUS_STYLES as a,
   ITEM_STATUS_STYLES as b,
   PAYMENT_LABELS as c,
+  cn as d,
   formatBRL as f,
   parseEntregaveis as p
 };

@@ -1,7 +1,7 @@
 import { r as reactExports, j as jsxRuntimeExports } from "../_libs/react.mjs";
 import { d as useNavigate } from "../_libs/tanstack__react-router.mjs";
 import { s as supabase } from "./client-CQo1km_T.mjs";
-import { p as parseEntregaveis, C as CrmShell, f as formatBRL, c as PAYMENT_LABELS } from "./types-a-riWKSj.mjs";
+import { p as parseEntregaveis, C as CrmShell, f as formatBRL, c as PAYMENT_LABELS } from "./types-X5ke7Yv5.mjs";
 import { e as Package, x as Power, D as DollarSign, S as Search, k as LoaderCircle, h as Plus, o as Clock, p as CreditCard, q as ListChecks, m as ChevronUp, n as ChevronDown, i as Trash2, j as Save } from "../_libs/lucide-react.mjs";
 import "../_libs/tanstack__router-core.mjs";
 import "../_libs/tanstack__history.mjs";

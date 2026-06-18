@@ -38,7 +38,7 @@ function CrmSidebar() {
   return (
     <Sidebar
       collapsible="icon"
-      className="!bg-[linear-gradient(180deg,rgba(17,38,33,0.98),rgba(9,22,19,0.98))] !text-[#f2f7f4] border-r border-emerald-950/40"
+      className="[&_[data-sidebar=sidebar]]:!bg-[linear-gradient(180deg,rgba(17,38,33,0.98),rgba(9,22,19,0.98))] [&_[data-sidebar=sidebar]]:!text-[#f2f7f4] [&_[data-sidebar=sidebar]]:border-r [&_[data-sidebar=sidebar]]:border-emerald-950/40"
     >
       <SidebarHeader className="border-b border-sidebar-border">
         <Link to="/" className="flex items-center gap-2 px-2 py-1.5">

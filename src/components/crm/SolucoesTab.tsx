@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Plus,
   Trash2,
@@ -348,52 +349,54 @@ function ProposalCard({
             ))}
           </div>
 
-          <div className="relative">
-            <button
-              onClick={() => setShowCatalog((s) => !s)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background/60 px-3 py-2 text-xs font-bold hover:border-primary"
+          <Popover open={showCatalog} onOpenChange={setShowCatalog}>
+            <PopoverTrigger asChild>
+              <button className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background/60 px-3 py-2 text-xs font-bold hover:border-primary">
+                <Plus className="h-3.5 w-3.5" /> Adicionar serviço
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              align="start"
+              side="bottom"
+              sideOffset={10}
+              className="z-[60] w-[min(92vw,24rem)] max-h-[28rem] overflow-y-auto rounded-xl border border-border bg-popover p-2 shadow-2xl"
             >
-              <Plus className="h-3.5 w-3.5" /> Adicionar serviço
-            </button>
-            {showCatalog && (
-              <div className="absolute left-0 top-full z-30 mt-2 w-80 max-h-80 overflow-y-auto rounded-xl border border-border bg-popover shadow-2xl p-2">
-                <button
-                  onClick={addCustomItem}
-                  className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-secondary flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4 text-primary" /> Serviço personalizado
-                </button>
-                <div className="my-1 border-t border-border/60" />
-                <div className="px-3 py-1 text-[0.65rem] font-bold uppercase tracking-wider text-muted-foreground">
-                  Do catálogo
-                </div>
-                {catalog.length === 0 && (
-                  <div className="px-3 py-4 text-xs text-muted-foreground">
-                    Catálogo vazio. Cadastre serviços em /crm/servicos.
-                  </div>
-                )}
-                {catalog.map((svc) => (
-                  <button
-                    key={svc.id}
-                    onClick={() => addFromCatalog(svc)}
-                    className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-secondary"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-semibold">{svc.nome}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {formatBRL(svc.valor_padrao)}
-                      </span>
-                    </div>
-                    {svc.descricao && (
-                      <div className="text-xs text-muted-foreground line-clamp-1">
-                        {svc.descricao}
-                      </div>
-                    )}
-                  </button>
-                ))}
+              <button
+                onClick={addCustomItem}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-secondary"
+              >
+                <Plus className="h-4 w-4 text-primary" /> Serviço personalizado
+              </button>
+              <div className="my-1 border-t border-border/60" />
+              <div className="px-3 py-1 text-[0.65rem] font-bold uppercase tracking-wider text-muted-foreground">
+                Do catálogo
               </div>
-            )}
-          </div>
+              {catalog.length === 0 && (
+                <div className="px-3 py-4 text-xs text-muted-foreground">
+                  Catálogo vazio. Cadastre serviços em /crm/servicos.
+                </div>
+              )}
+              {catalog.map((svc) => (
+                <button
+                  key={svc.id}
+                  onClick={() => addFromCatalog(svc)}
+                  className="w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-secondary"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-semibold">{svc.nome}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatBRL(svc.valor_padrao)}
+                    </span>
+                  </div>
+                  {svc.descricao && (
+                    <div className="text-xs text-muted-foreground line-clamp-1">
+                      {svc.descricao}
+                    </div>
+                  )}
+                </button>
+              ))}
+            </PopoverContent>
+          </Popover>
 
           <div className="flex justify-end gap-2 pt-2 border-t border-border/60">
             <button

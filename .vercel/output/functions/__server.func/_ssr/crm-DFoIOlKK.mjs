@@ -2,9 +2,11 @@ import { r as reactExports, j as jsxRuntimeExports } from "../_libs/react.mjs";
 import { d as useNavigate, e as useRouterState, O as Outlet, u as useRouter } from "../_libs/tanstack__react-router.mjs";
 import { m as isRedirect } from "../_libs/tanstack__router-core.mjs";
 import { s as supabase } from "./client-CQo1km_T.mjs";
-import { a as createServerFn, T as TSS_SERVER_FUNCTION, g as getServerFnById } from "./server-BL3oLn43.mjs";
-import { r as requireSupabaseAuth } from "./auth-middleware-B43AU26j.mjs";
-import { C as CrmShell, p as parseEntregaveis, f as formatBRL, P as PROPOSAL_STATUS_LABELS, a as PROPOSAL_STATUS_STYLES, I as ITEM_STATUS_LABELS, b as ITEM_STATUS_STYLES, c as PAYMENT_LABELS } from "./types-a-riWKSj.mjs";
+import { a as createServerFn, T as TSS_SERVER_FUNCTION, g as getServerFnById } from "./server-Cwc50HX9.mjs";
+import { r as requireSupabaseAuth } from "./auth-middleware-ChwfLgaX.mjs";
+import { C as CrmShell, p as parseEntregaveis, f as formatBRL, P as PROPOSAL_STATUS_LABELS, a as PROPOSAL_STATUS_STYLES, I as ITEM_STATUS_LABELS, b as ITEM_STATUS_STYLES, c as PAYMENT_LABELS, d as cn } from "./types-X5ke7Yv5.mjs";
+import { R as Root, P as Portal$1, C as Content, a as Close, T as Title, D as Description, O as Overlay } from "../_libs/radix-ui__react-dialog.mjs";
+import { R as Root2, T as Trigger, P as Portal, C as Content2 } from "../_libs/radix-ui__react-popover.mjs";
 import { l as logoUrl } from "./logo orientamais-BvCW8YDi.mjs";
 import "../_libs/seroval.mjs";
 import { C as ClipboardCheck, S as Search, L as Lightbulb, R as Rocket, a as ChartColumn, F as Funnel, b as LogOut, G as GripVertical, P as Phone, B as Building2, M as Minimize2, c as Maximize2, d as FileDown, X, e as Package, T as Target, f as Check, g as TrendingUp, h as Plus, i as Trash2, j as Save, k as LoaderCircle, l as Sparkles, m as ChevronUp, n as ChevronDown, o as Clock, p as CreditCard, q as ListChecks, r as CalendarDays } from "../_libs/lucide-react.mjs";
@@ -39,18 +41,26 @@ import "../_libs/clsx.mjs";
 import "../_libs/tailwind-merge.mjs";
 import "../_libs/radix-ui__react-separator.mjs";
 import "../_libs/radix-ui__react-primitive.mjs";
-import "../_libs/radix-ui__react-dialog.mjs";
+import "../_libs/radix-ui__react-tooltip.mjs";
 import "../_libs/radix-ui__primitive.mjs";
 import "../_libs/radix-ui__react-context.mjs";
-import "../_libs/radix-ui__react-id.mjs";
-import "../_libs/@radix-ui/react-use-layout-effect+[...].mjs";
-import "../_libs/@radix-ui/react-use-controllable-state+[...].mjs";
 import "../_libs/@radix-ui/react-dismissable-layer+[...].mjs";
 import "../_libs/@radix-ui/react-use-callback-ref+[...].mjs";
 import "../_libs/@radix-ui/react-use-escape-keydown+[...].mjs";
-import "../_libs/radix-ui__react-focus-scope.mjs";
+import "../_libs/radix-ui__react-id.mjs";
+import "../_libs/@radix-ui/react-use-layout-effect+[...].mjs";
+import "../_libs/radix-ui__react-popper.mjs";
+import "../_libs/floating-ui__react-dom.mjs";
+import "../_libs/floating-ui__dom.mjs";
+import "../_libs/floating-ui__core.mjs";
+import "../_libs/floating-ui__utils.mjs";
+import "../_libs/radix-ui__react-arrow.mjs";
+import "../_libs/radix-ui__react-use-size.mjs";
 import "../_libs/radix-ui__react-portal.mjs";
 import "../_libs/radix-ui__react-presence.mjs";
+import "../_libs/@radix-ui/react-use-controllable-state+[...].mjs";
+import "../_libs/@radix-ui/react-visually-hidden+[...].mjs";
+import "../_libs/radix-ui__react-focus-scope.mjs";
 import "../_libs/radix-ui__react-focus-guards.mjs";
 import "../_libs/react-remove-scroll.mjs";
 import "../_libs/react-remove-scroll-bar.mjs";
@@ -59,15 +69,6 @@ import "../_libs/get-nonce.mjs";
 import "../_libs/use-sidecar.mjs";
 import "../_libs/use-callback-ref.mjs";
 import "../_libs/aria-hidden.mjs";
-import "../_libs/radix-ui__react-tooltip.mjs";
-import "../_libs/radix-ui__react-popper.mjs";
-import "../_libs/floating-ui__react-dom.mjs";
-import "../_libs/floating-ui__dom.mjs";
-import "../_libs/floating-ui__core.mjs";
-import "../_libs/floating-ui__utils.mjs";
-import "../_libs/radix-ui__react-arrow.mjs";
-import "../_libs/radix-ui__react-use-size.mjs";
-import "../_libs/@radix-ui/react-visually-hidden+[...].mjs";
 function useServerFn(serverFn) {
   const router = useRouter();
   return reactExports.useCallback(async (...args) => {
@@ -583,6 +584,86 @@ async function generateOrientamaisPlanoPdf({ draft, logoUrl: logoUrl2 }) {
   drawWrappedLines(nextLines, M + 18, y + 44, { size: 10.2, color: C.ink, lineHeight: 13 });
   doc.save(`orientohub-plano-${draft.nome.replace(/\s+/g, "-").toLowerCase()}.pdf`);
 }
+const Dialog = Root;
+const DialogPortal = Portal$1;
+const DialogOverlay = reactExports.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+  Overlay,
+  {
+    ref,
+    className: cn(
+      "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      className
+    ),
+    ...props
+  }
+));
+DialogOverlay.displayName = Overlay.displayName;
+const DialogContent = reactExports.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogPortal, { children: [
+  /* @__PURE__ */ jsxRuntimeExports.jsx(DialogOverlay, {}),
+  /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    Content,
+    {
+      ref,
+      className: cn(
+        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:rounded-lg",
+        className
+      ),
+      ...props,
+      children: [
+        children,
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(Close, { className: "absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background cursor-pointer transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(X, { className: "h-4 w-4" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "sr-only", children: "Close" })
+        ] })
+      ]
+    }
+  )
+] }));
+DialogContent.displayName = Content.displayName;
+const DialogHeader = ({ className, ...props }) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: cn("flex flex-col space-y-1.5 text-center sm:text-left", className), ...props });
+DialogHeader.displayName = "DialogHeader";
+const DialogFooter = ({ className, ...props }) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+  "div",
+  {
+    className: cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className),
+    ...props
+  }
+);
+DialogFooter.displayName = "DialogFooter";
+const DialogTitle = reactExports.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+  Title,
+  {
+    ref,
+    className: cn("text-lg font-semibold leading-none tracking-tight", className),
+    ...props
+  }
+));
+DialogTitle.displayName = Title.displayName;
+const DialogDescription = reactExports.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+  Description,
+  {
+    ref,
+    className: cn("text-sm text-muted-foreground", className),
+    ...props
+  }
+));
+DialogDescription.displayName = Description.displayName;
+const Popover = Root2;
+const PopoverTrigger = Trigger;
+const PopoverContent = reactExports.forwardRef(({ className, align = "center", sideOffset = 4, ...props }, ref) => /* @__PURE__ */ jsxRuntimeExports.jsx(Portal, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+  Content2,
+  {
+    ref,
+    align,
+    sideOffset,
+    className: cn(
+      "z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-(--radix-popover-content-transform-origin)",
+      className
+    ),
+    ...props
+  }
+) }));
+PopoverContent.displayName = Content2.displayName;
 function SolucoesTab({ leadId }) {
   const [catalog, setCatalog] = reactExports.useState([]);
   const [proposals, setProposals] = reactExports.useState([]);
@@ -697,6 +778,8 @@ function ProposalCard({
   const [draft, setDraft] = reactExports.useState(proposal);
   const [saving, setSaving] = reactExports.useState(false);
   const [showCatalog, setShowCatalog] = reactExports.useState(defaultShowCatalog);
+  const [deleteDialogOpen, setDeleteDialogOpen] = reactExports.useState(false);
+  const [deleting, setDeleting] = reactExports.useState(false);
   reactExports.useEffect(() => {
     setDraft(proposal);
   }, [proposal]);
@@ -723,9 +806,12 @@ function ProposalCard({
     setSaving(false);
     if (!error) onChange();
   }
-  async function removeProposal() {
-    if (!confirm("Excluir esta proposta e todos os seus serviços?")) return;
-    await supabase.from("lead_proposals").delete().eq("id", proposal.id);
+  async function confirmRemoveProposal() {
+    setDeleting(true);
+    const { error } = await supabase.from("lead_proposals").delete().eq("id", proposal.id);
+    setDeleting(false);
+    if (error) return;
+    setDeleteDialogOpen(false);
     onChange();
   }
   async function addFromCatalog(svc) {
@@ -756,7 +842,7 @@ function ProposalCard({
     });
     onChange();
   }
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rounded-2xl border border-border bg-card/60 backdrop-blur overflow-hidden", children: [
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "rounded-2xl border border-border bg-card/60 backdrop-blur overflow-visible", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start justify-between gap-3 p-4 border-b border-border/60", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start gap-3 flex-1 min-w-0", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -802,7 +888,7 @@ function ProposalCard({
       /* @__PURE__ */ jsxRuntimeExports.jsx(
         "button",
         {
-          onClick: removeProposal,
+          onClick: () => setDeleteDialogOpen(true),
           className: "p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10",
           title: "Excluir proposta",
           children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "h-4 w-4" })
@@ -832,49 +918,51 @@ function ProposalCard({
         }
       ) }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-3", children: items.map((it) => /* @__PURE__ */ jsxRuntimeExports.jsx(ItemRow, { item: it, onChange }, it.id)) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(Popover, { open: showCatalog, onOpenChange: setShowCatalog, children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(PopoverTrigger, { asChild: true, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { className: "inline-flex items-center gap-1.5 rounded-lg border border-border bg-background/60 px-3 py-2 text-xs font-bold hover:border-primary", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "h-3.5 w-3.5" }),
+          " Adicionar serviço"
+        ] }) }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          "button",
+          PopoverContent,
           {
-            onClick: () => setShowCatalog((s) => !s),
-            className: "inline-flex items-center gap-1.5 rounded-lg border border-border bg-background/60 px-3 py-2 text-xs font-bold hover:border-primary",
+            align: "start",
+            side: "bottom",
+            sideOffset: 10,
+            className: "z-[60] w-[min(92vw,24rem)] max-h-[28rem] overflow-y-auto rounded-xl border border-border bg-popover p-2 shadow-2xl",
             children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "h-3.5 w-3.5" }),
-              " Adicionar serviço"
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "button",
+                {
+                  onClick: addCustomItem,
+                  className: "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-secondary",
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "h-4 w-4 text-primary" }),
+                    " Serviço personalizado"
+                  ]
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "my-1 border-t border-border/60" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-3 py-1 text-[0.65rem] font-bold uppercase tracking-wider text-muted-foreground", children: "Do catálogo" }),
+              catalog.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-3 py-4 text-xs text-muted-foreground", children: "Catálogo vazio. Cadastre serviços em /crm/servicos." }),
+              catalog.map((svc) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "button",
+                {
+                  onClick: () => addFromCatalog(svc),
+                  className: "w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-secondary",
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between gap-2", children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-semibold", children: svc.nome }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-muted-foreground", children: formatBRL(svc.valor_padrao) })
+                    ] }),
+                    svc.descricao && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs text-muted-foreground line-clamp-1", children: svc.descricao })
+                  ]
+                },
+                svc.id
+              ))
             ]
           }
-        ),
-        showCatalog && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "absolute z-10 mt-2 w-80 max-h-80 overflow-y-auto rounded-xl border border-border bg-popover shadow-lg p-2", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            "button",
-            {
-              onClick: addCustomItem,
-              className: "w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-secondary flex items-center gap-2",
-              children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "h-4 w-4 text-primary" }),
-                " Serviço personalizado"
-              ]
-            }
-          ),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "my-1 border-t border-border/60" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-3 py-1 text-[0.65rem] font-bold uppercase tracking-wider text-muted-foreground", children: "Do catálogo" }),
-          catalog.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-3 py-4 text-xs text-muted-foreground", children: "Catálogo vazio. Cadastre serviços em /crm/servicos." }),
-          catalog.map((svc) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            "button",
-            {
-              onClick: () => addFromCatalog(svc),
-              className: "w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-secondary",
-              children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between gap-2", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-semibold", children: svc.nome }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-muted-foreground", children: formatBRL(svc.valor_padrao) })
-                ] }),
-                svc.descricao && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-xs text-muted-foreground line-clamp-1", children: svc.descricao })
-              ]
-            },
-            svc.id
-          ))
-        ] })
+        )
       ] }),
       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex justify-end gap-2 pt-2 border-t border-border/60", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
         "button",
@@ -888,7 +976,36 @@ function ProposalCard({
           ]
         }
       ) })
-    ] })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(Dialog, { open: deleteDialogOpen, onOpenChange: setDeleteDialogOpen, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogContent, { className: "sm:max-w-md", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogHeader, { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(DialogTitle, { children: "Excluir proposta?" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(DialogDescription, { children: "Essa ação remove a proposta e todos os serviços vinculados. Não é possível desfazer." })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogFooter, { className: "gap-2 sm:gap-0", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "button",
+          {
+            onClick: () => setDeleteDialogOpen(false),
+            className: "inline-flex items-center justify-center rounded-lg border border-border bg-background px-3 py-2 text-xs font-bold hover:border-primary",
+            disabled: deleting,
+            children: "Cancelar"
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "button",
+          {
+            onClick: confirmRemoveProposal,
+            disabled: deleting,
+            className: "inline-flex items-center justify-center gap-1.5 rounded-lg bg-destructive px-3 py-2 text-xs font-bold text-destructive-foreground hover:opacity-90 disabled:opacity-50",
+            children: [
+              deleting ? /* @__PURE__ */ jsxRuntimeExports.jsx(LoaderCircle, { className: "h-3.5 w-3.5 animate-spin" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "h-3.5 w-3.5" }),
+              "Excluir proposta"
+            ]
+          }
+        )
+      ] })
+    ] }) })
   ] });
 }
 function StatusBadge({ status }) {
