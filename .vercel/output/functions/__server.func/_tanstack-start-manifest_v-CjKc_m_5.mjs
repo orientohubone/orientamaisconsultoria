@@ -1,4 +1,0 @@
-const tsrStartManifest = () => ({ routes: { __root__: { filePath: "C:/orientamaisconsultoria/src/routes/__root.tsx", children: ["/", "/crm", "/login"], preloads: ["/assets/index-DV9fZGnw.js"], scripts: [{ attrs: { type: "module", async: true, src: "/assets/index-DV9fZGnw.js" } }] }, "/": { filePath: "C:/orientamaisconsultoria/src/routes/index.tsx", children: void 0, preloads: ["/assets/index-CImTQVnT.js", "/assets/logo orientamais-CbFopMRf.js", "/assets/arrow-right-7w4BCJA7.js", "/assets/trending-up-DtvMg461.js"] }, "/crm": { filePath: "C:/orientamaisconsultoria/src/routes/crm.tsx", children: void 0, preloads: ["/assets/crm-CQG7ERV0.js", "/assets/logo orientamais-CbFopMRf.js", "/assets/trending-up-DtvMg461.js"] }, "/login": { filePath: "C:/orientamaisconsultoria/src/routes/login.tsx", children: void 0, preloads: ["/assets/login-DDrOYezJ.js", "/assets/logo orientamais-CbFopMRf.js", "/assets/arrow-right-7w4BCJA7.js"] } } });
-export {
-  tsrStartManifest
-};

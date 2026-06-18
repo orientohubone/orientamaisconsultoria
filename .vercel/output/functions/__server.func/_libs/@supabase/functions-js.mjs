@@ -1,3 +1,12 @@
+function __assign(target, ...sources) {
+  for (const source of sources) {
+    if (source == null) continue;
+    for (const key of Object.keys(Object(source))) {
+      target[key] = source[key];
+    }
+  }
+  return target;
+}
 function __rest(source, exclude) {
   const target = {};
   if (source == null) return target;
@@ -35,10 +44,23 @@ function __awaiter(thisArg, _arguments, P, generator) {
       }
     }
     function step(result) {
-      result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+      if (result.done) {
+        resolve(result.value);
+        return;
+      }
+      adopt(result.value).then(fulfilled, rejected);
     }
-    step((generator = generator.apply(thisArg, _arguments || [])).next());
+    const iterator = generator.apply(thisArg, _arguments || []);
+    step(iterator.next());
   });
+}
+function __spreadArray(to, from, pack) {
+  {
+    for (let i = 0, l = from.length; i < l; i++) {
+      to.push(from[i]);
+    }
+  }
+  return to;
 }
 const resolveFetch = (customFetch) => {
   if (customFetch) {
@@ -360,5 +382,7 @@ class FunctionsClient {
 }
 export {
   FunctionsClient as F,
-  __rest as _
+  __rest as _,
+  __assign as a,
+  __spreadArray as b
 };

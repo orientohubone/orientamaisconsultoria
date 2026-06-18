@@ -2,7 +2,7 @@ import { r as reactExports, j as jsxRuntimeExports } from "../_libs/react.mjs";
 import { l as logoUrl } from "./logo orientamais-BvCW8YDi.mjs";
 import { s as supabase } from "./client-CQo1km_T.mjs";
 import { L as Link } from "../_libs/tanstack__react-router.mjs";
-import { A as ArrowRight, l as Crosshair, m as Megaphone, U as Users, f as TrendingUp, n as ChartPie, C as ClipboardCheck, S as Search, L as Lightbulb, R as Rocket, a as ChartColumn, o as ChevronRight, p as CircleCheck } from "../_libs/lucide-react.mjs";
+import { A as ArrowRight, s as Crosshair, t as Megaphone, U as Users, g as TrendingUp, u as ChartPie, C as ClipboardCheck, S as Search, L as Lightbulb, R as Rocket, a as ChartColumn, v as ChevronRight, w as CircleCheck } from "../_libs/lucide-react.mjs";
 import "../_libs/supabase__supabase-js.mjs";
 import "../_libs/supabase__postgrest-js.mjs";
 import "../_libs/supabase__realtime-js.mjs";

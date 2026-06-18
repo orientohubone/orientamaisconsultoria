@@ -780,6 +780,14 @@ function RouterProvider({ router, ...rest }) {
     children: /* @__PURE__ */ jsxRuntimeExports.jsx(Matches, {})
   });
 }
+function useRouterState(opts) {
+  const contextRouter = useRouter({ warn: opts?.router === void 0 });
+  const router = opts?.router || contextRouter;
+  {
+    const state = router.stores.__store.get();
+    return opts?.select ? opts.select(state) : state;
+  }
+}
 var noopScriptHandler = () => {
 };
 function setScriptAttrs(script, attrs) {
@@ -1173,6 +1181,7 @@ export {
   createFileRoute as b,
   createRouter as c,
   useNavigate as d,
+  useRouterState as e,
   lazyRouteComponent as l,
   renderRouterToStream as r,
   useRouter as u

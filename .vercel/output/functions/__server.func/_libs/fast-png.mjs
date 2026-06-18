@@ -1,4 +1,4 @@
-import { b as getAugmentedNamespace } from "./react.mjs";
+import { d as getAugmentedNamespace } from "./react.mjs";
 import { I as IOBuffer } from "./iobuffer.mjs";
 import { I as Inflate_1, i as inflate_1, d as deflate_1 } from "./pako.mjs";
 const crcTable = [];

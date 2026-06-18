@@ -1,4 +1,4 @@
-import { b as getAugmentedNamespace } from "./react.mjs";
+import { d as getAugmentedNamespace } from "./react.mjs";
 var extendStatics = function(d, b) {
   extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d2, b2) {
     d2.__proto__ = b2;
