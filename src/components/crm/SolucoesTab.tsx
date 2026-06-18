@@ -359,6 +359,7 @@ function ProposalCard({
               align="start"
               side="bottom"
               sideOffset={10}
+              avoidCollisions={false}
               className="z-[60] w-[min(92vw,24rem)] max-h-[28rem] overflow-y-auto rounded-xl border border-border bg-popover p-2 shadow-2xl"
             >
               <button
