@@ -651,12 +651,13 @@ function LeadDrawer({
     };
 
     const drawLogoContain = (
-      dataUrl: string,
+      dataUrl: string | null,
       x: number,
       yPos: number,
       maxW: number,
       maxH: number,
     ) => {
+      if (!dataUrl) return;
       const props = doc.getImageProperties(dataUrl);
       const ratio = props.width / props.height;
       let w = maxW;
@@ -739,9 +740,10 @@ function LeadDrawer({
 
     const renderFlowText = (
       title: string,
-      text: string,
+      text: string | null | undefined,
       opts: { bodySize?: number; lineGap?: number; tone?: [number, number, number] } = {},
     ) => {
+      if (!text) return;
       const bodySize = opts.bodySize ?? 10.15;
       const lineGap = opts.lineGap ?? 4.6;
       const tone = opts.tone ?? C.primary;

@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      lead_proposals: {
+        Row: {
+          created_at: string
+          decided_at: string | null
+          id: string
+          lead_id: string
+          observacoes: string | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["proposal_status"]
+          titulo: string
+          updated_at: string
+          valor_total: number
+        }
+        Insert: {
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          lead_id: string
+          observacoes?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["proposal_status"]
+          titulo?: string
+          updated_at?: string
+          valor_total?: number
+        }
+        Update: {
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          lead_id?: string
+          observacoes?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["proposal_status"]
+          titulo?: string
+          updated_at?: string
+          valor_total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_proposals_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           analise_ai: string | null
@@ -80,6 +127,132 @@ export type Database = {
         }
         Relationships: []
       }
+      proposal_items: {
+        Row: {
+          created_at: string
+          data_entrega_prevista: string | null
+          data_entrega_real: string | null
+          data_inicio: string | null
+          descricao: string | null
+          entregaveis: Json
+          forma_pagamento: Database["public"]["Enums"]["payment_method"] | null
+          id: string
+          nome: string
+          ordem: number
+          parcelas: number | null
+          prazo_dias: number | null
+          proposal_id: string
+          service_catalog_id: string | null
+          status: Database["public"]["Enums"]["proposal_item_status"]
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          created_at?: string
+          data_entrega_prevista?: string | null
+          data_entrega_real?: string | null
+          data_inicio?: string | null
+          descricao?: string | null
+          entregaveis?: Json
+          forma_pagamento?: Database["public"]["Enums"]["payment_method"] | null
+          id?: string
+          nome: string
+          ordem?: number
+          parcelas?: number | null
+          prazo_dias?: number | null
+          proposal_id: string
+          service_catalog_id?: string | null
+          status?: Database["public"]["Enums"]["proposal_item_status"]
+          updated_at?: string
+          valor?: number
+        }
+        Update: {
+          created_at?: string
+          data_entrega_prevista?: string | null
+          data_entrega_real?: string | null
+          data_inicio?: string | null
+          descricao?: string | null
+          entregaveis?: Json
+          forma_pagamento?: Database["public"]["Enums"]["payment_method"] | null
+          id?: string
+          nome?: string
+          ordem?: number
+          parcelas?: number | null
+          prazo_dias?: number | null
+          proposal_id?: string
+          service_catalog_id?: string | null
+          status?: Database["public"]["Enums"]["proposal_item_status"]
+          updated_at?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposal_items_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "lead_proposals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proposal_items_service_catalog_id_fkey"
+            columns: ["service_catalog_id"]
+            isOneToOne: false
+            referencedRelation: "services_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      services_catalog: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          descricao: string | null
+          entregaveis: Json
+          forma_pagamento_padrao:
+            | Database["public"]["Enums"]["payment_method"]
+            | null
+          id: string
+          nome: string
+          parcelas_padrao: number | null
+          prazo_dias: number | null
+          scripts_whatsapp: Json
+          updated_at: string
+          valor_padrao: number | null
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          descricao?: string | null
+          entregaveis?: Json
+          forma_pagamento_padrao?:
+            | Database["public"]["Enums"]["payment_method"]
+            | null
+          id?: string
+          nome: string
+          parcelas_padrao?: number | null
+          prazo_dias?: number | null
+          scripts_whatsapp?: Json
+          updated_at?: string
+          valor_padrao?: number | null
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          descricao?: string | null
+          entregaveis?: Json
+          forma_pagamento_padrao?:
+            | Database["public"]["Enums"]["payment_method"]
+            | null
+          id?: string
+          nome?: string
+          parcelas_padrao?: number | null
+          prazo_dias?: number | null
+          scripts_whatsapp?: Json
+          updated_at?: string
+          valor_padrao?: number | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -123,6 +296,20 @@ export type Database = {
         | "estrategia"
         | "execucao"
         | "resultados"
+      payment_method:
+        | "a_vista"
+        | "parcelado"
+        | "recorrente_mensal"
+        | "recorrente_anual"
+        | "permuta"
+        | "outro"
+      proposal_item_status:
+        | "proposto"
+        | "aprovado"
+        | "em_execucao"
+        | "entregue"
+        | "cancelado"
+      proposal_status: "rascunho" | "enviada" | "aceita" | "recusada"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -258,6 +445,22 @@ export const Constants = {
         "execucao",
         "resultados",
       ],
+      payment_method: [
+        "a_vista",
+        "parcelado",
+        "recorrente_mensal",
+        "recorrente_anual",
+        "permuta",
+        "outro",
+      ],
+      proposal_item_status: [
+        "proposto",
+        "aprovado",
+        "em_execucao",
+        "entregue",
+        "cancelado",
+      ],
+      proposal_status: ["rascunho", "enviada", "aceita", "recusada"],
     },
   },
 } as const

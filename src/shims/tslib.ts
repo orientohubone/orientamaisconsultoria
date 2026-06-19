@@ -7,7 +7,7 @@ export function __assign<T extends AnyRecord>(
   for (const source of sources) {
     if (source == null) continue;
     for (const key of Object.keys(Object(source))) {
-      target[key] = source[key];
+      (target as AnyRecord)[key] = (source as AnyRecord)[key];
     }
   }
   return target;
@@ -41,7 +41,7 @@ type GeneratorLike = {
 
 type GeneratorFactory = {
   apply: (thisArg: unknown, args: unknown[]) => GeneratorLike;
-};
+} & GeneratorLike;
 
 export function __awaiter(
   thisArg: unknown,
