@@ -215,6 +215,7 @@ export type Database = {
           nome: string
           parcelas_padrao: number | null
           prazo_dias: number | null
+          scripts_whatsapp: Json
           updated_at: string
           valor_padrao: number | null
         }
@@ -230,6 +231,7 @@ export type Database = {
           nome: string
           parcelas_padrao?: number | null
           prazo_dias?: number | null
+          scripts_whatsapp?: Json
           updated_at?: string
           valor_padrao?: number | null
         }
@@ -245,6 +247,7 @@ export type Database = {
           nome?: string
           parcelas_padrao?: number | null
           prazo_dias?: number | null
+          scripts_whatsapp?: Json
           updated_at?: string
           valor_padrao?: number | null
         }
