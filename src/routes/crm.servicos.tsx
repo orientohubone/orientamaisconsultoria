@@ -99,6 +99,12 @@ function ServicosPage() {
     return { total: list.length, ativos: ativos.length, ticketMedio };
   }, [list]);
 
+  async function copyScript(text: string, label: string) {
+    await copyToClipboard(text);
+    setCopyFeedback(`Script "${label}" copiado para a área de transferência.`);
+    window.setTimeout(() => setCopyFeedback(null), 2500);
+  }
+
   async function createNew() {
     const { error } = await supabase.from("services_catalog").insert({
       nome: "Novo serviço",
