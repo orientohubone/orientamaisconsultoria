@@ -101,8 +101,8 @@ function ServicosPage() {
 
   async function copyScript(text: string, label: string) {
     await copyToClipboard(text);
-    setCopyFeedback(`Script "${label}" copiado para a área de transferência.`);
-    window.setTimeout(() => setCopyFeedback(null), 2500);
+    setLocalFeedback(`Script "${label}" copiado para a área de transferência.`);
+    window.setTimeout(() => setLocalFeedback(null), 2500);
   }
 
   async function createNew() {
