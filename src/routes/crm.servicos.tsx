@@ -319,6 +319,7 @@ function ServiceCard({ svc, onChange }: { svc: ServiceCatalog; onChange: () => v
   const [saving, setSaving] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [entregavelInput, setEntregavelInput] = useState("");
+  const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
 
   useEffect(() => {
     setDraft(
