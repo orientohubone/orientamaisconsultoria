@@ -84,7 +84,7 @@ function getResponse() {
 }
 var HEADERS = { TSS_SHELL: "X-TSS_SHELL" };
 async function getStartManifest(matchedRoutes) {
-  const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-6bbOlWVa.mjs");
+  const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-DK2OEVBi.mjs");
   const startManifest = tsrStartManifest();
   let routes = startManifest.routes;
   routes[rootRouteId];
@@ -106,19 +106,19 @@ async function getStartManifest(matchedRoutes) {
 const manifest = {
   "1f09c2d87a98e98865ed585a8969dfe4752ba9b63f5bed110bdbfbb1cd83388a": {
     functionName: "generateAnalise_createServerFn_handler",
-    importer: () => import("./ai-orientacao.functions-C7Fy-FA7.mjs")
+    importer: () => import("./ai-orientacao.functions-vSQ7a68U.mjs")
   },
   "4430b43f8e2654a04528d2e7ae51e57a695fdd138a67de0aebcd84960e57fde4": {
     functionName: "generatePlano_createServerFn_handler",
-    importer: () => import("./ai-orientacao.functions-C7Fy-FA7.mjs")
+    importer: () => import("./ai-orientacao.functions-vSQ7a68U.mjs")
   },
   "b13e953d6673a1474eb69bf0d379a5ee7b27d13df9aafc36548936d127621dd5": {
     functionName: "enrichDiagnostico_createServerFn_handler",
-    importer: () => import("./ai-orientacao.functions-C7Fy-FA7.mjs")
+    importer: () => import("./ai-orientacao.functions-vSQ7a68U.mjs")
   },
   "cc209f9a203d973b7de45214e5756daa2e64cc34121f1327d3e48e03cb1a2c03": {
     functionName: "suggestMetricas_createServerFn_handler",
-    importer: () => import("./ai-orientacao.functions-C7Fy-FA7.mjs")
+    importer: () => import("./ai-orientacao.functions-vSQ7a68U.mjs")
   }
 };
 async function getServerFnById(id, access) {
@@ -1348,8 +1348,8 @@ var getBaseManifest = getProdBaseManifest;
 var createEarlyHintsForRequest = createEarlyHintsCollector;
 async function loadEntries() {
   const [routerEntry, startEntry, pluginAdapters] = await Promise.all([
-    import("./router-BMyS9tAQ.mjs"),
-    import("./start-CumBHqH2.mjs"),
+    import("./router-DmYe62Ht.mjs"),
+    import("./start-4dfSHaM4.mjs"),
     import("./empty-plugin-adapters-BFgPZ6_d.mjs")
   ]);
   return {

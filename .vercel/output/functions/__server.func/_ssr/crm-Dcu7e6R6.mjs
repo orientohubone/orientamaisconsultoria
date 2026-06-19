@@ -2,9 +2,9 @@ import { r as reactExports, j as jsxRuntimeExports } from "../_libs/react.mjs";
 import { d as useNavigate, e as useRouterState, O as Outlet, u as useRouter } from "../_libs/tanstack__react-router.mjs";
 import { m as isRedirect } from "../_libs/tanstack__router-core.mjs";
 import { s as supabase } from "./client-CQo1km_T.mjs";
-import { a as createServerFn, T as TSS_SERVER_FUNCTION, g as getServerFnById } from "./server-Cwc50HX9.mjs";
-import { r as requireSupabaseAuth } from "./auth-middleware-ChwfLgaX.mjs";
-import { C as CrmShell, p as parseEntregaveis, f as formatBRL, P as PROPOSAL_STATUS_LABELS, a as PROPOSAL_STATUS_STYLES, I as ITEM_STATUS_LABELS, b as ITEM_STATUS_STYLES, c as PAYMENT_LABELS, d as cn } from "./types-X5ke7Yv5.mjs";
+import { a as createServerFn, T as TSS_SERVER_FUNCTION, g as getServerFnById } from "./server-Nzz9Dmzd.mjs";
+import { r as requireSupabaseAuth } from "./auth-middleware-dqX5K5_Z.mjs";
+import { C as CrmShell, p as parseEntregaveis, f as formatBRL, P as PROPOSAL_STATUS_LABELS, a as PROPOSAL_STATUS_STYLES, I as ITEM_STATUS_LABELS, b as ITEM_STATUS_STYLES, c as PAYMENT_LABELS, d as cn } from "./types-dTqo7EEy.mjs";
 import { R as Root, P as Portal$1, C as Content, a as Close, T as Title, D as Description, O as Overlay } from "../_libs/radix-ui__react-dialog.mjs";
 import { R as Root2, T as Trigger, P as Portal, C as Content2 } from "../_libs/radix-ui__react-popover.mjs";
 import { l as logoUrl } from "./logo orientamais-BvCW8YDi.mjs";
@@ -650,11 +650,12 @@ const DialogDescription = reactExports.forwardRef(({ className, ...props }, ref)
 DialogDescription.displayName = Description.displayName;
 const Popover = Root2;
 const PopoverTrigger = Trigger;
-const PopoverContent = reactExports.forwardRef(({ className, align = "center", sideOffset = 4, ...props }, ref) => /* @__PURE__ */ jsxRuntimeExports.jsx(Portal, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+const PopoverContent = reactExports.forwardRef(({ className, align = "center", side = "bottom", sideOffset = 4, ...props }, ref) => /* @__PURE__ */ jsxRuntimeExports.jsx(Portal, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
   Content2,
   {
     ref,
     align,
+    side,
     sideOffset,
     className: cn(
       "z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-(--radix-popover-content-transform-origin)",
@@ -929,6 +930,7 @@ function ProposalCard({
             align: "start",
             side: "bottom",
             sideOffset: 10,
+            avoidCollisions: false,
             className: "z-[60] w-[min(92vw,24rem)] max-h-[28rem] overflow-y-auto rounded-xl border border-border bg-popover p-2 shadow-2xl",
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsxs(

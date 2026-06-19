@@ -15,13 +15,20 @@ import {
   ChevronDown,
   ChevronUp,
   Search,
+  Copy,
+  MessageSquareText,
+  Sparkles,
 } from "lucide-react";
 import { CrmShell } from "@/components/crm/CrmShell";
 import {
   formatBRL,
+  buildServiceWhatsAppScripts,
   parseEntregaveis,
+  parseWhatsAppScripts,
   PAYMENT_LABELS,
+  GENERAL_WHATSAPP_TEMPLATES,
   type PaymentMethod,
+  type WhatsAppScript,
   type ServiceCatalog,
 } from "@/components/crm/types";
 
@@ -38,6 +45,7 @@ function ServicosPage() {
   const [err, setErr] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [showInactive, setShowInactive] = useState(false);
+  const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -45,9 +53,18 @@ function ServicosPage() {
     const { data, error } = await supabase.from("services_catalog").select("*").order("nome");
     if (error) setErr(error.message);
     const rows = (data ?? []) as Array<
-      Omit<ServiceCatalog, "entregaveis"> & { entregaveis: unknown }
+      Omit<ServiceCatalog, "entregaveis" | "scripts_whatsapp"> & {
+        entregaveis: unknown;
+        scripts_whatsapp: unknown;
+      }
     >;
-    setList(rows.map((c) => ({ ...c, entregaveis: parseEntregaveis(c.entregaveis) })));
+    setList(
+      rows.map((c) => ({
+        ...c,
+        entregaveis: parseEntregaveis(c.entregaveis),
+        scripts_whatsapp: parseWhatsAppScripts(c.scripts_whatsapp),
+      })),
+    );
     setLoading(false);
   }, []);
 
@@ -88,6 +105,13 @@ function ServicosPage() {
       valor_padrao: 0,
       prazo_dias: 30,
       entregaveis: [],
+      scripts_whatsapp: buildServiceWhatsAppScripts({
+        nome: "Novo serviço",
+        descricao: null,
+        entregaveis: [],
+        valor_padrao: 0,
+        prazo_dias: 30,
+      }),
       forma_pagamento_padrao: "a_vista",
       parcelas_padrao: 1,
     });
@@ -122,6 +146,57 @@ function ServicosPage() {
       actions={actions}
     >
       <div className="max-w-6xl mx-auto px-6 py-8 space-y-6">
+        <section
+          className="rounded-3xl border border-border bg-card/60 backdrop-blur p-5"
+          style={{ boxShadow: "var(--shadow-card)" }}
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[0.65rem] font-bold uppercase tracking-wider text-primary">
+                <MessageSquareText className="h-3.5 w-3.5" />
+                Modelos gerais
+              </div>
+              <h2 className="mt-3 text-lg font-bold">Scripts-base para WhatsApp</h2>
+              <p className="mt-1 text-sm text-muted-foreground max-w-3xl">
+                Use estes textos como ponto de partida para começar a prospecção. Eles já vêm com
+                linguagem comercial leve e espaços para você adaptar ao serviço, ao cliente e ao
+                momento da conversa.
+              </p>
+            </div>
+          </div>
+          {copyFeedback && (
+            <div className="mt-4 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700 dark:text-emerald-300">
+              {copyFeedback}
+            </div>
+          )}
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {GENERAL_WHATSAPP_TEMPLATES.map((template) => (
+              <article
+                key={template.titulo}
+                className="rounded-2xl border border-border bg-background/70 p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-[0.65rem] font-bold uppercase tracking-wider text-muted-foreground">
+                      {template.categoria}
+                    </div>
+                    <h3 className="mt-1 font-bold">{template.titulo}</h3>
+                  </div>
+                  <button
+                    onClick={() => copyScript(template.mensagem, template.titulo)}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-[0.65rem] font-bold hover:border-primary"
+                  >
+                    <Copy className="h-3.5 w-3.5" /> Copiar
+                  </button>
+                </div>
+                <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
+                  {template.mensagem}
+                </p>
+              </article>
+            ))}
+          </div>
+        </section>
+
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <StatCard
             icon={<Package className="h-4 w-4" />}
@@ -230,13 +305,21 @@ function StatCard({
 }
 
 function ServiceCard({ svc, onChange }: { svc: ServiceCatalog; onChange: () => void }) {
-  const [draft, setDraft] = useState<ServiceCatalog>(svc);
+  const [draft, setDraft] = useState<ServiceCatalog>(
+    svc.scripts_whatsapp.length > 0
+      ? svc
+      : { ...svc, scripts_whatsapp: buildServiceWhatsAppScripts(svc) },
+  );
   const [saving, setSaving] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [entregavelInput, setEntregavelInput] = useState("");
 
   useEffect(() => {
-    setDraft(svc);
+    setDraft(
+      svc.scripts_whatsapp.length > 0
+        ? svc
+        : { ...svc, scripts_whatsapp: buildServiceWhatsAppScripts(svc) },
+    );
   }, [svc]);
 
   async function save() {
@@ -249,6 +332,7 @@ function ServiceCard({ svc, onChange }: { svc: ServiceCatalog; onChange: () => v
         valor_padrao: Number(draft.valor_padrao ?? 0),
         prazo_dias: draft.prazo_dias,
         entregaveis: draft.entregaveis,
+        scripts_whatsapp: draft.scripts_whatsapp,
         forma_pagamento_padrao: draft.forma_pagamento_padrao,
         parcelas_padrao: draft.parcelas_padrao,
         ativo: draft.ativo,
@@ -276,6 +360,43 @@ function ServiceCard({ svc, onChange }: { svc: ServiceCatalog; onChange: () => v
     if (!v) return;
     setDraft({ ...draft, entregaveis: [...draft.entregaveis, v] });
     setEntregavelInput("");
+  }
+
+  function addScriptFromTemplate(template?: (typeof GENERAL_WHATSAPP_TEMPLATES)[number]) {
+    const next = template
+      ? [
+          ...draft.scripts_whatsapp,
+          createWhatsAppScript({
+            titulo: template.titulo,
+            categoria: template.categoria,
+            mensagem: template.mensagem,
+          }),
+        ]
+      : [...draft.scripts_whatsapp, createEmptyWhatsAppScript()];
+    setDraft({ ...draft, scripts_whatsapp: next });
+  }
+
+  function updateScript(idx: number, patch: Partial<WhatsAppScript>) {
+    const next = [...draft.scripts_whatsapp];
+    next[idx] = { ...next[idx], ...patch };
+    setDraft({ ...draft, scripts_whatsapp: next });
+  }
+
+  function removeScript(idx: number) {
+    setDraft({ ...draft, scripts_whatsapp: draft.scripts_whatsapp.filter((_, i) => i !== idx) });
+  }
+
+  function applyDefaultScripts() {
+    setDraft({
+      ...draft,
+      scripts_whatsapp: buildServiceWhatsAppScripts(draft),
+    });
+  }
+
+  async function copyScript(text: string, label: string) {
+    await copyToClipboard(text);
+    setCopyFeedback(`Script "${label}" copiado para a área de transferência.`);
+    window.setTimeout(() => setCopyFeedback(null), 2500);
   }
 
   return (
@@ -422,6 +543,87 @@ function ServiceCard({ svc, onChange }: { svc: ServiceCatalog; onChange: () => v
               </div>
             </div>
           </FieldMini>
+
+          <FieldMini label="Scripts de prospecção via WhatsApp">
+            <div className="space-y-3">
+              <p className="text-xs text-muted-foreground">
+                Crie os textos que sua equipe pode usar para abordar, fazer follow-up e retomar
+                conversas sobre este serviço.
+              </p>
+              {draft.scripts_whatsapp.length === 0 && (
+                <div className="rounded-lg border border-dashed border-border bg-secondary/30 p-4 text-sm text-muted-foreground">
+                  Nenhum script criado ainda. Você pode inserir modelos prontos ou criar um do zero.
+                </div>
+              )}
+              {draft.scripts_whatsapp.map((script, idx) => (
+                <div
+                  key={script.id}
+                  className="rounded-2xl border border-border bg-background/70 p-3 space-y-3"
+                >
+                  <div className="flex items-start gap-2">
+                    <div className="flex-1 min-w-0 grid gap-2 md:grid-cols-[12rem_1fr]">
+                      <input
+                        value={script.titulo}
+                        onChange={(e) => updateScript(idx, { titulo: e.target.value })}
+                        placeholder="Título do script"
+                        className="w-full rounded-lg bg-input border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                      />
+                      <input
+                        value={script.categoria}
+                        onChange={(e) => updateScript(idx, { categoria: e.target.value })}
+                        placeholder="Categoria"
+                        className="w-full rounded-lg bg-input border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                      />
+                    </div>
+                    <button
+                      onClick={() => copyScript(script.mensagem, script.titulo)}
+                      className="shrink-0 inline-flex items-center gap-1 rounded-lg border border-border px-2.5 py-2 text-[0.65rem] font-bold hover:border-primary"
+                    >
+                      <Copy className="h-3.5 w-3.5" /> Copiar
+                    </button>
+                    <button
+                      onClick={() => removeScript(idx)}
+                      className="shrink-0 rounded-lg p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <textarea
+                    value={script.mensagem}
+                    onChange={(e) => updateScript(idx, { mensagem: e.target.value })}
+                    rows={4}
+                    placeholder="Escreva aqui o script para WhatsApp..."
+                    className="w-full rounded-lg bg-input border border-border px-3 py-2 text-sm leading-6 focus:border-primary focus:outline-none resize-none"
+                  />
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[0.65rem] text-muted-foreground">
+                      Dica: use placeholders como [nome], [segmento] ou [dor principal].
+                    </p>
+                  </div>
+                </div>
+              ))}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => addScriptFromTemplate()}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background/60 px-3 py-2 text-xs font-bold hover:border-primary"
+                >
+                  <Plus className="h-3.5 w-3.5" /> Novo script
+                </button>
+                <button
+                  onClick={() => addScriptFromTemplate(GENERAL_WHATSAPP_TEMPLATES[0])}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background/60 px-3 py-2 text-xs font-bold hover:border-primary"
+                >
+                  <Sparkles className="h-3.5 w-3.5" /> Inserir modelo geral
+                </button>
+                <button
+                  onClick={applyDefaultScripts}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-3 py-2 text-xs font-bold hover:opacity-90"
+                >
+                  <MessageSquareText className="h-3.5 w-3.5" /> Gerar fluxo completo
+                </button>
+              </div>
+            </div>
+          </FieldMini>
           <div className="flex justify-between items-center pt-2 border-t border-border/50">
             <button
               onClick={remove}
@@ -465,4 +667,25 @@ function FieldMini({ label, children }: { label: string; children: React.ReactNo
       <div className="mt-1">{children}</div>
     </div>
   );
+}
+
+function createWhatsAppScript(script: Omit<WhatsAppScript, "id">): WhatsAppScript {
+  return {
+    id:
+      globalThis.crypto?.randomUUID?.() ??
+      `script-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    ...script,
+  };
+}
+
+function createEmptyWhatsAppScript(): WhatsAppScript {
+  return createWhatsAppScript({
+    titulo: "Novo script",
+    categoria: "geral",
+    mensagem: "",
+  });
+}
+
+async function copyToClipboard(text: string) {
+  await navigator.clipboard.writeText(text);
 }
