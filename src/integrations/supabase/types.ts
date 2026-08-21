@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      diagnostic_appointments: {
+        Row: {
+          agendado_para: string
+          created_at: string
+          empresa: string | null
+          id: string
+          nome: string
+          observacoes: string | null
+          status: string
+          updated_at: string
+          whatsapp: string | null
+        }
+        Insert: {
+          agendado_para: string
+          created_at?: string
+          empresa?: string | null
+          id?: string
+          nome: string
+          observacoes?: string | null
+          status?: string
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          agendado_para?: string
+          created_at?: string
+          empresa?: string | null
+          id?: string
+          nome?: string
+          observacoes?: string | null
+          status?: string
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       lead_proposals: {
         Row: {
           created_at: string
