@@ -65,6 +65,7 @@ type Lead = {
   execucao_notas: string | null;
   resultados_metricas: Metrica[];
   resultados_notas: string | null;
+  agendado_para: string | null;
 };
 
 type DiagnosticAppointment = {
@@ -186,7 +187,7 @@ function CrmPage() {
         .eq("status", "agendado")
         .order("agendado_para", { ascending: true }),
     ]);
-    if (!leadsResult.error && leadsResult.data) setLeads(leadsResult.data as Lead[]);
+    if (!leadsResult.error && leadsResult.data) setLeads(leadsResult.data as unknown as Lead[]);
     if (!appointmentsResult.error && appointmentsResult.data) {
       setAppointments(appointmentsResult.data as DiagnosticAppointment[]);
     }

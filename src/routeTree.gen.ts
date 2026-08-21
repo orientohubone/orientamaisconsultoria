@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as CrmRouteImport } from './routes/crm'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CrmSprintComercialRouteImport } from './routes/crm.sprint-comercial'
 import { Route as CrmServicosRouteImport } from './routes/crm.servicos'
 import { Route as CrmFluxoVendedorRouteImport } from './routes/crm.fluxo-vendedor'
 import { Route as CrmAgendaRouteImport } from './routes/crm.agenda'
@@ -30,6 +31,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const CrmSprintComercialRoute = CrmSprintComercialRouteImport.update({
+  id: '/sprint-comercial',
+  path: '/sprint-comercial',
+  getParentRoute: () => CrmRoute,
 } as any)
 const CrmServicosRoute = CrmServicosRouteImport.update({
   id: '/servicos',
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/crm/agenda': typeof CrmAgendaRoute
   '/crm/fluxo-vendedor': typeof CrmFluxoVendedorRoute
   '/crm/servicos': typeof CrmServicosRoute
+  '/crm/sprint-comercial': typeof CrmSprintComercialRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/crm/agenda': typeof CrmAgendaRoute
   '/crm/fluxo-vendedor': typeof CrmFluxoVendedorRoute
   '/crm/servicos': typeof CrmServicosRoute
+  '/crm/sprint-comercial': typeof CrmSprintComercialRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,6 +79,7 @@ export interface FileRoutesById {
   '/crm/agenda': typeof CrmAgendaRoute
   '/crm/fluxo-vendedor': typeof CrmFluxoVendedorRoute
   '/crm/servicos': typeof CrmServicosRoute
+  '/crm/sprint-comercial': typeof CrmSprintComercialRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,6 +90,7 @@ export interface FileRouteTypes {
     | '/crm/agenda'
     | '/crm/fluxo-vendedor'
     | '/crm/servicos'
+    | '/crm/sprint-comercial'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -89,6 +99,7 @@ export interface FileRouteTypes {
     | '/crm/agenda'
     | '/crm/fluxo-vendedor'
     | '/crm/servicos'
+    | '/crm/sprint-comercial'
   id:
     | '__root__'
     | '/'
@@ -97,6 +108,7 @@ export interface FileRouteTypes {
     | '/crm/agenda'
     | '/crm/fluxo-vendedor'
     | '/crm/servicos'
+    | '/crm/sprint-comercial'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -128,6 +140,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/crm/sprint-comercial': {
+      id: '/crm/sprint-comercial'
+      path: '/sprint-comercial'
+      fullPath: '/crm/sprint-comercial'
+      preLoaderRoute: typeof CrmSprintComercialRouteImport
+      parentRoute: typeof CrmRoute
+    }
     '/crm/servicos': {
       id: '/crm/servicos'
       path: '/servicos'
@@ -156,12 +175,14 @@ interface CrmRouteChildren {
   CrmAgendaRoute: typeof CrmAgendaRoute
   CrmFluxoVendedorRoute: typeof CrmFluxoVendedorRoute
   CrmServicosRoute: typeof CrmServicosRoute
+  CrmSprintComercialRoute: typeof CrmSprintComercialRoute
 }
 
 const CrmRouteChildren: CrmRouteChildren = {
   CrmAgendaRoute: CrmAgendaRoute,
   CrmFluxoVendedorRoute: CrmFluxoVendedorRoute,
   CrmServicosRoute: CrmServicosRoute,
+  CrmSprintComercialRoute: CrmSprintComercialRoute,
 }
 
 const CrmRouteWithChildren = CrmRoute._addFileChildren(CrmRouteChildren)
