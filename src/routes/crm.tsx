@@ -65,6 +65,7 @@ type Lead = {
   execucao_notas: string | null;
   resultados_metricas: Metrica[];
   resultados_notas: string | null;
+  agendado_para: string | null;
 };
 
 type Oportunidade = { titulo: string; descricao: string; impacto: string; selecionada?: boolean };
@@ -175,7 +176,7 @@ function CrmPage() {
       .from("leads")
       .select("*")
       .order("created_at", { ascending: false });
-    if (!error && data) setLeads(data as Lead[]);
+    if (!error && data) setLeads(data as unknown as Lead[]);
     setLoading(false);
   }, []);
 
