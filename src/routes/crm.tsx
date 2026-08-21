@@ -66,6 +66,7 @@ type Lead = {
   execucao_notas: string | null;
   resultados_metricas: Metrica[];
   resultados_notas: string | null;
+  agendado_para: string | null;
 };
 
 type DiagnosticAppointment = {
