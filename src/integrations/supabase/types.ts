@@ -99,6 +99,7 @@ export type Database = {
       }
       leads: {
         Row: {
+          agendado_para: string | null
           analise_ai: string | null
           anotacoes: string | null
           cnpj: string | null
@@ -120,6 +121,7 @@ export type Database = {
           whatsapp: string
         }
         Insert: {
+          agendado_para?: string | null
           analise_ai?: string | null
           anotacoes?: string | null
           cnpj?: string | null
@@ -141,6 +143,7 @@ export type Database = {
           whatsapp: string
         }
         Update: {
+          agendado_para?: string | null
           analise_ai?: string | null
           anotacoes?: string | null
           cnpj?: string | null
