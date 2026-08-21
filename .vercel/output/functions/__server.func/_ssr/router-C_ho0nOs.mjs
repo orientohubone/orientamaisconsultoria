@@ -15,7 +15,7 @@ import "crypto";
 import "async_hooks";
 import "stream";
 import "../_libs/isbot.mjs";
-const appCss = "/assets/styles-BYi-E5fO.css";
+const appCss = "/assets/styles-CiN2b7gs.css";
 function reportLovableError(error, context = {}) {
   if (typeof window === "undefined") return;
   window.__lovableEvents?.captureException?.(
@@ -80,7 +80,7 @@ function ErrorComponent({ error, reset }) {
     ] })
   ] }) });
 }
-const Route$4 = createRootRouteWithContext()({
+const Route$6 = createRootRouteWithContext()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -122,29 +122,29 @@ function RootShell({ children }) {
   ] });
 }
 function RootComponent() {
-  const { queryClient } = Route$4.useRouteContext();
+  const { queryClient } = Route$6.useRouteContext();
   return /* @__PURE__ */ jsxRuntimeExports.jsx(QueryClientProvider, { client: queryClient, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Outlet, {}) });
 }
-const $$splitComponentImporter$3 = () => import("./login-BSmEdcvw.mjs");
-const Route$3 = createFileRoute("/login")({
+const $$splitComponentImporter$5 = () => import("./login-BSmEdcvw.mjs");
+const Route$5 = createFileRoute("/login")({
   head: () => ({
     meta: [{
       title: "Entrar — Orientamais CRM"
     }]
   }),
-  component: lazyRouteComponent($$splitComponentImporter$3, "component")
+  component: lazyRouteComponent($$splitComponentImporter$5, "component")
 });
-const $$splitComponentImporter$2 = () => import("./crm-Dcu7e6R6.mjs");
-const Route$2 = createFileRoute("/crm")({
+const $$splitComponentImporter$4 = () => import("./crm-CY7JmryU.mjs");
+const Route$4 = createFileRoute("/crm")({
   head: () => ({
     meta: [{
       title: "CRM — Orientamais"
     }]
   }),
-  component: lazyRouteComponent($$splitComponentImporter$2, "component")
+  component: lazyRouteComponent($$splitComponentImporter$4, "component")
 });
-const $$splitComponentImporter$1 = () => import("./index-BKn0y95H.mjs");
-const Route$1 = createFileRoute("/")({
+const $$splitComponentImporter$3 = () => import("./index-BKn0y95H.mjs");
+const Route$3 = createFileRoute("/")({
   head: () => ({
     meta: [{
       title: "Orientamais | Orientação Gratuita para Empreendedores"
@@ -159,38 +159,68 @@ const Route$1 = createFileRoute("/")({
       content: "Sessão de orientação gratuita: clareza, estratégia e direção para o seu negócio crescer."
     }]
   }),
-  component: lazyRouteComponent($$splitComponentImporter$1, "component")
+  component: lazyRouteComponent($$splitComponentImporter$3, "component")
 });
-const $$splitComponentImporter = () => import("./crm.servicos-DfpivPBt.mjs");
-const Route = createFileRoute("/crm/servicos")({
+const $$splitComponentImporter$2 = () => import("./crm.servicos-C2eWu0qz.mjs");
+const Route$2 = createFileRoute("/crm/servicos")({
   head: () => ({
     meta: [{
       title: "Catálogo de Serviços — Orientamais"
     }]
   }),
+  component: lazyRouteComponent($$splitComponentImporter$2, "component")
+});
+const $$splitComponentImporter$1 = () => import("./crm.fluxo-vendedor-DNFSzegH.mjs");
+const Route$1 = createFileRoute("/crm/fluxo-vendedor")({
+  head: () => ({
+    meta: [{
+      title: "Fluxo Vendedor — Orientamais"
+    }]
+  }),
+  component: lazyRouteComponent($$splitComponentImporter$1, "component")
+});
+const $$splitComponentImporter = () => import("./crm.agenda-D1nDdZNo.mjs");
+const Route = createFileRoute("/crm/agenda")({
+  head: () => ({
+    meta: [{
+      title: "Agenda — Orientamais"
+    }]
+  }),
   component: lazyRouteComponent($$splitComponentImporter, "component")
 });
-const LoginRoute = Route$3.update({
+const LoginRoute = Route$5.update({
   id: "/login",
   path: "/login",
-  getParentRoute: () => Route$4
+  getParentRoute: () => Route$6
 });
-const CrmRoute = Route$2.update({
+const CrmRoute = Route$4.update({
   id: "/crm",
   path: "/crm",
-  getParentRoute: () => Route$4
+  getParentRoute: () => Route$6
 });
-const IndexRoute = Route$1.update({
+const IndexRoute = Route$3.update({
   id: "/",
   path: "/",
-  getParentRoute: () => Route$4
+  getParentRoute: () => Route$6
 });
-const CrmServicosRoute = Route.update({
+const CrmServicosRoute = Route$2.update({
   id: "/servicos",
   path: "/servicos",
   getParentRoute: () => CrmRoute
 });
+const CrmFluxoVendedorRoute = Route$1.update({
+  id: "/fluxo-vendedor",
+  path: "/fluxo-vendedor",
+  getParentRoute: () => CrmRoute
+});
+const CrmAgendaRoute = Route.update({
+  id: "/agenda",
+  path: "/agenda",
+  getParentRoute: () => CrmRoute
+});
 const CrmRouteChildren = {
+  CrmAgendaRoute,
+  CrmFluxoVendedorRoute,
   CrmServicosRoute
 };
 const CrmRouteWithChildren = CrmRoute._addFileChildren(CrmRouteChildren);
@@ -199,7 +229,7 @@ const rootRouteChildren = {
   CrmRoute: CrmRouteWithChildren,
   LoginRoute
 };
-const routeTree = Route$4._addFileChildren(rootRouteChildren)._addFileTypes();
+const routeTree = Route$6._addFileChildren(rootRouteChildren)._addFileTypes();
 const getRouter = () => {
   const queryClient = new QueryClient();
   const router = createRouter({

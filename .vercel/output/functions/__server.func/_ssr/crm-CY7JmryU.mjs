@@ -2,11 +2,12 @@ import { r as reactExports, j as jsxRuntimeExports } from "../_libs/react.mjs";
 import { d as useNavigate, e as useRouterState, O as Outlet, u as useRouter } from "../_libs/tanstack__react-router.mjs";
 import { m as isRedirect } from "../_libs/tanstack__router-core.mjs";
 import { s as supabase } from "./client-CQo1km_T.mjs";
-import { a as createServerFn, T as TSS_SERVER_FUNCTION, g as getServerFnById } from "./server-Nzz9Dmzd.mjs";
-import { r as requireSupabaseAuth } from "./auth-middleware-dqX5K5_Z.mjs";
-import { C as CrmShell, p as parseEntregaveis, f as formatBRL, P as PROPOSAL_STATUS_LABELS, a as PROPOSAL_STATUS_STYLES, I as ITEM_STATUS_LABELS, b as ITEM_STATUS_STYLES, c as PAYMENT_LABELS, d as cn } from "./types-dTqo7EEy.mjs";
-import { R as Root, P as Portal$1, C as Content, a as Close, T as Title, D as Description, O as Overlay } from "../_libs/radix-ui__react-dialog.mjs";
-import { R as Root2, T as Trigger, P as Portal, C as Content2 } from "../_libs/radix-ui__react-popover.mjs";
+import { a as createServerFn, T as TSS_SERVER_FUNCTION, g as getServerFnById } from "./server-B3LA3TGe.mjs";
+import { r as requireSupabaseAuth } from "./auth-middleware-Ci20cixy.mjs";
+import { C as CrmShell, c as cn } from "./CrmShell-DKvjT1c5.mjs";
+import { R as Root, P as Portal, C as Content, a as Close, T as Title, D as Description, O as Overlay } from "../_libs/radix-ui__react-dialog.mjs";
+import { P as Popover, a as PopoverTrigger, b as PopoverContent } from "./popover-DQKRE8Bu.mjs";
+import { p as parseEntregaveis, f as formatBRL, P as PROPOSAL_STATUS_LABELS, a as PROPOSAL_STATUS_STYLES, I as ITEM_STATUS_LABELS, b as ITEM_STATUS_STYLES, c as PAYMENT_LABELS } from "./types-niz1owCT.mjs";
 import { l as logoUrl } from "./logo orientamais-BvCW8YDi.mjs";
 import "../_libs/seroval.mjs";
 import { C as ClipboardCheck, S as Search, L as Lightbulb, R as Rocket, a as ChartColumn, F as Funnel, b as LogOut, G as GripVertical, P as Phone, B as Building2, M as Minimize2, c as Maximize2, d as FileDown, X, e as Package, T as Target, f as Check, g as TrendingUp, h as Plus, i as Trash2, j as Save, k as LoaderCircle, l as Sparkles, m as ChevronUp, n as ChevronDown, o as Clock, p as CreditCard, q as ListChecks, r as CalendarDays } from "../_libs/lucide-react.mjs";
@@ -69,6 +70,7 @@ import "../_libs/get-nonce.mjs";
 import "../_libs/use-sidecar.mjs";
 import "../_libs/use-callback-ref.mjs";
 import "../_libs/aria-hidden.mjs";
+import "../_libs/radix-ui__react-popover.mjs";
 function useServerFn(serverFn) {
   const router = useRouter();
   return reactExports.useCallback(async (...args) => {
@@ -585,7 +587,7 @@ async function generateOrientamaisPlanoPdf({ draft, logoUrl: logoUrl2 }) {
   doc.save(`orientohub-plano-${draft.nome.replace(/\s+/g, "-").toLowerCase()}.pdf`);
 }
 const Dialog = Root;
-const DialogPortal = Portal$1;
+const DialogPortal = Portal;
 const DialogOverlay = reactExports.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsxRuntimeExports.jsx(
   Overlay,
   {
@@ -648,23 +650,6 @@ const DialogDescription = reactExports.forwardRef(({ className, ...props }, ref)
   }
 ));
 DialogDescription.displayName = Description.displayName;
-const Popover = Root2;
-const PopoverTrigger = Trigger;
-const PopoverContent = reactExports.forwardRef(({ className, align = "center", side = "bottom", sideOffset = 4, ...props }, ref) => /* @__PURE__ */ jsxRuntimeExports.jsx(Portal, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-  Content2,
-  {
-    ref,
-    align,
-    side,
-    sideOffset,
-    className: cn(
-      "z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-(--radix-popover-content-transform-origin)",
-      className
-    ),
-    ...props
-  }
-) }));
-PopoverContent.displayName = Content2.displayName;
 function SolucoesTab({ leadId }) {
   const [catalog, setCatalog] = reactExports.useState([]);
   const [proposals, setProposals] = reactExports.useState([]);
@@ -1379,19 +1364,22 @@ function CrmPage() {
   });
   const [authReady, setAuthReady] = reactExports.useState(false);
   const [leads, setLeads] = reactExports.useState([]);
+  const [appointments, setAppointments] = reactExports.useState([]);
   const [loading, setLoading] = reactExports.useState(true);
   const [filter, setFilter] = reactExports.useState("all");
   const [query, setQuery] = reactExports.useState("");
   const [selected, setSelected] = reactExports.useState(null);
   const fetchLeads = reactExports.useCallback(async () => {
     setLoading(true);
-    const {
-      data,
-      error
-    } = await supabase.from("leads").select("*").order("created_at", {
+    const [leadsResult, appointmentsResult] = await Promise.all([supabase.from("leads").select("*").order("created_at", {
       ascending: false
-    });
-    if (!error && data) setLeads(data);
+    }), supabase.from("diagnostic_appointments").select("whatsapp, agendado_para, status").eq("status", "agendado").order("agendado_para", {
+      ascending: true
+    })]);
+    if (!leadsResult.error && leadsResult.data) setLeads(leadsResult.data);
+    if (!appointmentsResult.error && appointmentsResult.data) {
+      setAppointments(appointmentsResult.data);
+    }
     setLoading(false);
   }, []);
   reactExports.useEffect(() => {
@@ -1428,6 +1416,12 @@ function CrmPage() {
       table: "leads"
     }, () => {
       fetchLeads();
+    }).on("postgres_changes", {
+      event: "*",
+      schema: "public",
+      table: "diagnostic_appointments"
+    }, () => {
+      fetchLeads();
     }).subscribe();
     return () => {
       supabase.removeChannel(channel);
@@ -1452,6 +1446,16 @@ function CrmPage() {
     });
     return c;
   }, [leads]);
+  const appointmentByWhatsApp = reactExports.useMemo(() => {
+    const appointmentsMap = /* @__PURE__ */ new Map();
+    appointments.forEach((appointment) => {
+      const whatsapp = appointment.whatsapp?.replace(/\D/g, "");
+      if (whatsapp && !appointmentsMap.has(whatsapp)) {
+        appointmentsMap.set(whatsapp, appointment.agendado_para);
+      }
+    });
+    return appointmentsMap;
+  }, [appointments]);
   async function handleLogout() {
     await supabase.auth.signOut();
     navigate({
@@ -1461,7 +1465,7 @@ function CrmPage() {
   if (!authReady) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen flex items-center justify-center text-muted-foreground", children: "Carregando..." });
   }
-  if (pathname.startsWith("/crm/servicos")) {
+  if (pathname !== "/crm") {
     return /* @__PURE__ */ jsxRuntimeExports.jsx(Outlet, {});
   }
   const actions = /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { onClick: handleLogout, className: "inline-flex items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-xs font-bold hover:border-primary hover:text-primary", children: [
@@ -1487,9 +1491,10 @@ function CrmPage() {
         /* @__PURE__ */ jsxRuntimeExports.jsx("th", { className: "px-4 py-3", children: "Negócio" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("th", { className: "px-4 py-3", children: "WhatsApp" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("th", { className: "px-4 py-3", children: "Etapa" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("th", { className: "px-4 py-3", children: "Recebido em" })
+        /* @__PURE__ */ jsxRuntimeExports.jsx("th", { className: "px-4 py-3", children: "Recebido em" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("th", { className: "px-4 py-3", children: "Agendado para" })
       ] }) }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("tbody", { children: loading ? /* @__PURE__ */ jsxRuntimeExports.jsx("tr", { children: /* @__PURE__ */ jsxRuntimeExports.jsx("td", { colSpan: 5, className: "px-4 py-10 text-center text-muted-foreground", children: "Carregando..." }) }) : filtered.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("tr", { children: /* @__PURE__ */ jsxRuntimeExports.jsx("td", { colSpan: 5, className: "px-4 py-10 text-center text-muted-foreground", children: "Nenhum cliente nesta etapa ainda." }) }) : filtered.map((l) => /* @__PURE__ */ jsxRuntimeExports.jsxs("tr", { onClick: () => setSelected(l), className: "border-t border-border/40 cursor-pointer hover:bg-secondary/30 transition", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("tbody", { children: loading ? /* @__PURE__ */ jsxRuntimeExports.jsx("tr", { children: /* @__PURE__ */ jsxRuntimeExports.jsx("td", { colSpan: 6, className: "px-4 py-10 text-center text-muted-foreground", children: "Carregando..." }) }) : filtered.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx("tr", { children: /* @__PURE__ */ jsxRuntimeExports.jsx("td", { colSpan: 6, className: "px-4 py-10 text-center text-muted-foreground", children: "Nenhum cliente nesta etapa ainda." }) }) : filtered.map((l) => /* @__PURE__ */ jsxRuntimeExports.jsxs("tr", { onClick: () => setSelected(l), className: "border-t border-border/40 cursor-pointer hover:bg-secondary/30 transition", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsxs("td", { className: "px-4 py-3", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "font-semibold", children: l.nome }),
           l.cnpj && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-xs text-muted-foreground mt-0.5", children: [
@@ -1500,7 +1505,11 @@ function CrmPage() {
         /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: "px-4 py-3 text-muted-foreground", children: l.tipo_negocio || "—" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: "px-4 py-3 text-muted-foreground", children: l.whatsapp }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: "px-4 py-3", children: /* @__PURE__ */ jsxRuntimeExports.jsx(StageBadge, { stage: l.stage }) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: "px-4 py-3 text-xs text-muted-foreground", children: new Date(l.created_at).toLocaleDateString("pt-BR") })
+        /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: "px-4 py-3 text-xs text-muted-foreground", children: new Date(l.created_at).toLocaleDateString("pt-BR") }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("td", { className: "px-4 py-3 text-xs text-muted-foreground", children: l.agendado_para ?? appointmentByWhatsApp.get(l.whatsapp.replace(/\D/g, "")) ? new Date(l.agendado_para ?? appointmentByWhatsApp.get(l.whatsapp.replace(/\D/g, ""))).toLocaleString("pt-BR", {
+          dateStyle: "short",
+          timeStyle: "short"
+        }) : "—" })
       ] }, l.id)) })
     ] }) }) }),
     selected && /* @__PURE__ */ jsxRuntimeExports.jsx(LeadDrawer, { lead: selected, onClose: () => setSelected(null), onSaved: () => {

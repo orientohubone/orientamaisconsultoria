@@ -47,6 +47,7 @@ type Stage = "diagnostico" | "analise" | "estrategia" | "execucao" | "resultados
 
 type Lead = {
   id: string;
+  agendado_para: string | null;
   nome: string;
   whatsapp: string;
   tipo_negocio: string | null;
@@ -65,6 +66,12 @@ type Lead = {
   execucao_notas: string | null;
   resultados_metricas: Metrica[];
   resultados_notas: string | null;
+};
+
+type DiagnosticAppointment = {
+  whatsapp: string | null;
+  agendado_para: string;
+  status: "agendado" | "realizado" | "cancelado";
 };
 
 type Oportunidade = { titulo: string; descricao: string; impacto: string; selecionada?: boolean };
@@ -164,6 +171,7 @@ function CrmPage() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [authReady, setAuthReady] = useState(false);
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [appointments, setAppointments] = useState<DiagnosticAppointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Stage | "all">("all");
   const [query, setQuery] = useState("");
@@ -171,11 +179,18 @@ function CrmPage() {
 
   const fetchLeads = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("leads")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (!error && data) setLeads(data as Lead[]);
+    const [leadsResult, appointmentsResult] = await Promise.all([
+      supabase.from("leads").select("*").order("created_at", { ascending: false }),
+      supabase
+        .from("diagnostic_appointments")
+        .select("whatsapp, agendado_para, status")
+        .eq("status", "agendado")
+        .order("agendado_para", { ascending: true }),
+    ]);
+    if (!leadsResult.error && leadsResult.data) setLeads(leadsResult.data as Lead[]);
+    if (!appointmentsResult.error && appointmentsResult.data) {
+      setAppointments(appointmentsResult.data as DiagnosticAppointment[]);
+    }
     setLoading(false);
   }, []);
 
@@ -206,6 +221,13 @@ function CrmPage() {
       .on("postgres_changes", { event: "*", schema: "public", table: "leads" }, () => {
         fetchLeads();
       })
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "diagnostic_appointments" },
+        () => {
+          fetchLeads();
+        },
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
@@ -233,6 +255,17 @@ function CrmPage() {
     return c;
   }, [leads]);
 
+  const appointmentByWhatsApp = useMemo(() => {
+    const appointmentsMap = new Map<string, string>();
+    appointments.forEach((appointment) => {
+      const whatsapp = appointment.whatsapp?.replace(/\D/g, "");
+      if (whatsapp && !appointmentsMap.has(whatsapp)) {
+        appointmentsMap.set(whatsapp, appointment.agendado_para);
+      }
+    });
+    return appointmentsMap;
+  }, [appointments]);
+
   async function handleLogout() {
     await supabase.auth.signOut();
     navigate({ to: "/login" });
@@ -246,7 +279,7 @@ function CrmPage() {
     );
   }
 
-  if (pathname.startsWith("/crm/servicos")) {
+  if (pathname !== "/crm") {
     return <Outlet />;
   }
 
@@ -319,18 +352,19 @@ function CrmPage() {
                   <th className="px-4 py-3">WhatsApp</th>
                   <th className="px-4 py-3">Etapa</th>
                   <th className="px-4 py-3">Recebido em</th>
+                  <th className="px-4 py-3">Agendado para</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">
+                    <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">
                       Carregando...
                     </td>
                   </tr>
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">
+                    <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">
                       Nenhum cliente nesta etapa ainda.
                     </td>
                   </tr>
@@ -354,6 +388,18 @@ function CrmPage() {
                       </td>
                       <td className="px-4 py-3 text-xs text-muted-foreground">
                         {new Date(l.created_at).toLocaleDateString("pt-BR")}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground">
+                        {(l.agendado_para ??
+                        appointmentByWhatsApp.get(l.whatsapp.replace(/\D/g, "")))
+                          ? new Date(
+                              l.agendado_para ??
+                                appointmentByWhatsApp.get(l.whatsapp.replace(/\D/g, ""))!,
+                            ).toLocaleString("pt-BR", {
+                              dateStyle: "short",
+                              timeStyle: "short",
+                            })
+                          : "—"}
                       </td>
                     </tr>
                   ))

@@ -1,6 +1,6 @@
 import type React from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LogOut, Package, Users2, LayoutGrid } from "lucide-react";
+import { CalendarDays, LogOut, Package, Users2, LayoutGrid, Target } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import logoUrl from "@/assets/orientamaislogo.png";
@@ -22,6 +22,8 @@ import {
 
 const NAV = [
   { title: "Funil de clientes", url: "/crm", icon: Users2 },
+  { title: "Fluxo vendedor", url: "/crm/fluxo-vendedor", icon: Target },
+  { title: "Agenda", url: "/crm/agenda", icon: CalendarDays },
   { title: "Catálogo de serviços", url: "/crm/servicos", icon: Package },
 ];
 

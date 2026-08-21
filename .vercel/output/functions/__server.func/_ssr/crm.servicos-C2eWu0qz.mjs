@@ -1,7 +1,8 @@
 import { r as reactExports, j as jsxRuntimeExports } from "../_libs/react.mjs";
 import { d as useNavigate } from "../_libs/tanstack__react-router.mjs";
 import { s as supabase } from "./client-CQo1km_T.mjs";
-import { e as parseWhatsAppScripts, p as parseEntregaveis, C as CrmShell, G as GENERAL_WHATSAPP_TEMPLATES, f as formatBRL, g as buildServiceWhatsAppScripts, c as PAYMENT_LABELS } from "./types-dTqo7EEy.mjs";
+import { C as CrmShell } from "./CrmShell-DKvjT1c5.mjs";
+import { d as parseWhatsAppScripts, p as parseEntregaveis, G as GENERAL_WHATSAPP_TEMPLATES, f as formatBRL, e as buildServiceWhatsAppScripts, c as PAYMENT_LABELS } from "./types-niz1owCT.mjs";
 import { x as MessageSquareText, y as Copy, e as Package, z as Power, D as DollarSign, S as Search, k as LoaderCircle, h as Plus, o as Clock, p as CreditCard, q as ListChecks, m as ChevronUp, n as ChevronDown, i as Trash2, l as Sparkles, j as Save } from "../_libs/lucide-react.mjs";
 import "../_libs/tanstack__router-core.mjs";
 import "../_libs/tanstack__history.mjs";
@@ -68,7 +69,7 @@ function ServicosPage() {
   const [err, setErr] = reactExports.useState(null);
   const [query, setQuery] = reactExports.useState("");
   const [showInactive, setShowInactive] = reactExports.useState(false);
-  const [copyFeedback, setCopyFeedback2] = reactExports.useState(null);
+  const [copyFeedback, setCopyFeedback] = reactExports.useState(null);
   const reload = reactExports.useCallback(async () => {
     setLoading(true);
     setErr(null);
@@ -119,6 +120,11 @@ function ServicosPage() {
       ticketMedio
     };
   }, [list]);
+  async function copyScript(text, label) {
+    await copyToClipboard(text);
+    setCopyFeedback(`Script "${label}" copiado para a área de transferência.`);
+    window.setTimeout(() => setCopyFeedback(null), 2500);
+  }
   async function createNew() {
     const {
       error
@@ -235,6 +241,7 @@ function ServiceCard({
   const [saving, setSaving] = reactExports.useState(false);
   const [expanded, setExpanded] = reactExports.useState(false);
   const [entregavelInput, setEntregavelInput] = reactExports.useState("");
+  const [copyFeedback, setCopyFeedback] = reactExports.useState(null);
   reactExports.useEffect(() => {
     setDraft(svc.scripts_whatsapp.length > 0 ? svc : {
       ...svc,
@@ -318,7 +325,7 @@ function ServiceCard({
       scripts_whatsapp: buildServiceWhatsAppScripts(draft)
     });
   }
-  async function copyScript2(text, label) {
+  async function copyScript(text, label) {
     await copyToClipboard(text);
     setCopyFeedback(`Script "${label}" copiado para a área de transferência.`);
     window.setTimeout(() => setCopyFeedback(null), 2500);
@@ -420,7 +427,7 @@ function ServiceCard({
                 categoria: e.target.value
               }), placeholder: "Categoria", className: "w-full rounded-lg bg-input border border-border px-3 py-2 text-sm focus:border-primary focus:outline-none" })
             ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { onClick: () => copyScript2(script.mensagem, script.titulo), className: "shrink-0 inline-flex items-center gap-1 rounded-lg border border-border px-2.5 py-2 text-[0.65rem] font-bold hover:border-primary", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { onClick: () => copyScript(script.mensagem, script.titulo), className: "shrink-0 inline-flex items-center gap-1 rounded-lg border border-border px-2.5 py-2 text-[0.65rem] font-bold hover:border-primary", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(Copy, { className: "h-3.5 w-3.5" }),
               " Copiar"
             ] }),
