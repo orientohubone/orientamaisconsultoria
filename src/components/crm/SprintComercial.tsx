@@ -61,7 +61,7 @@ const DAYS = [
 export function SprintComercial() {
   return (
     <div className="space-y-8 px-5 py-6 md:px-8 md:py-8">
-      <section className="overflow-hidden rounded-3xl border border-primary/20 bg-[linear-gradient(135deg,rgba(15,118,110,0.14),rgba(255,255,255,0.55))] p-6 md:p-8">
+      <section className="overflow-hidden rounded-3xl border border-primary/20 bg-primary/10 p-6 md:p-8">
         <div className="max-w-3xl">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">10 dias úteis</p>
           <h2 className="mt-2 text-2xl font-bold tracking-tight md:text-3xl">Sprint Comercial Orientohub</h2>
