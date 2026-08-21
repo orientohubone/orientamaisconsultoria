@@ -93,6 +93,25 @@ export function AgendaDiagnosticos() {
     [items],
   );
   const selectedLead = leads.find((lead) => lead.id === form.lead_id);
+  const blockedSlots = useMemo(
+    () =>
+      new Set(
+        items
+          .filter((item) => item.status === "agendado")
+          .map((item) => new Date(item.agendado_para).getTime()),
+      ),
+    [items],
+  );
+  const selectedDateIsFullyBooked = useMemo(() => {
+    const selectedDate = form.data;
+    if (!selectedDate) return false;
+    return TIME_SLOTS.every((time) => {
+      const [hours, minutes] = time.split(":").map(Number);
+      const slot = new Date(selectedDate);
+      slot.setHours(hours, minutes, 0, 0);
+      return blockedSlots.has(slot.getTime());
+    });
+  }, [blockedSlots, form.data]);
 
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -100,6 +119,10 @@ export function AgendaDiagnosticos() {
     const [hours, minutes] = form.horario.split(":").map(Number);
     const scheduledAt = new Date(form.data);
     scheduledAt.setHours(hours, minutes, 0, 0);
+    if (blockedSlots.has(scheduledAt.getTime())) {
+      setError("Este horário já está ocupado. Escolha outro horário disponível.");
+      return;
+    }
     setSaving(true);
     setError(null);
     const { error: insertError } = await supabase.from("diagnostic_appointments").insert({
@@ -111,7 +134,12 @@ export function AgendaDiagnosticos() {
     });
     setSaving(false);
     if (insertError) {
-      setError(insertError.message);
+      setError(
+        insertError.code === "23505"
+          ? "Este horário acabou de ser reservado. Escolha outro horário disponível."
+          : insertError.message,
+      );
+      reload();
       return;
     }
     setForm(emptyForm());
@@ -211,8 +239,16 @@ export function AgendaDiagnosticos() {
               <Calendar
                 mode="single"
                 selected={form.data}
-                onSelect={(data) => setForm({ ...form, data })}
-                disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                onSelect={(data) => setForm({ ...form, data, horario: "" })}
+                disabled={(date) => {
+                  if (date < new Date(new Date().setHours(0, 0, 0, 0))) return true;
+                  return TIME_SLOTS.every((time) => {
+                    const [hours, minutes] = time.split(":").map(Number);
+                    const slot = new Date(date);
+                    slot.setHours(hours, minutes, 0, 0);
+                    return blockedSlots.has(slot.getTime());
+                  });
+                }}
                 initialFocus
               />
             </PopoverContent>
@@ -229,22 +265,29 @@ export function AgendaDiagnosticos() {
             </PopoverTrigger>
             <PopoverContent className="w-72 border-border bg-card p-3" align="start">
               <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Horários disponíveis
+                {selectedDateIsFullyBooked ? "Não há horários disponíveis nesta data" : "Horários disponíveis"}
               </p>
               <div className="grid grid-cols-3 gap-1.5">
-                {TIME_SLOTS.map((time) => (
-                  <button
-                    key={time}
-                    type="button"
-                    onClick={() => {
-                      setForm({ ...form, horario: time });
-                      setTimeOpen(false);
-                    }}
-                    className={`rounded-md px-2 py-1.5 text-xs font-bold transition ${form.horario === time ? "bg-primary text-primary-foreground" : "bg-secondary/60 text-foreground hover:bg-primary/15 hover:text-primary"}`}
-                  >
-                    {time}
-                  </button>
-                ))}
+                {TIME_SLOTS.map((time) => {
+                  const [hours, minutes] = time.split(":").map(Number);
+                  const slot = form.data ? new Date(form.data) : null;
+                  slot?.setHours(hours, minutes, 0, 0);
+                  const isBlocked = !slot || blockedSlots.has(slot.getTime());
+                  return (
+                    <button
+                      key={time}
+                      type="button"
+                      disabled={isBlocked}
+                      onClick={() => {
+                        setForm({ ...form, horario: time });
+                        setTimeOpen(false);
+                      }}
+                      className={`rounded-md px-2 py-1.5 text-xs font-bold transition ${isBlocked ? "cursor-not-allowed bg-muted text-muted-foreground line-through opacity-60" : form.horario === time ? "bg-primary text-primary-foreground" : "bg-secondary/60 text-foreground hover:bg-primary/15 hover:text-primary"}`}
+                    >
+                      {time}
+                    </button>
+                  );
+                })}
               </div>
             </PopoverContent>
           </Popover>

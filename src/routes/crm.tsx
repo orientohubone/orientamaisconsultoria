@@ -47,7 +47,6 @@ type Stage = "diagnostico" | "analise" | "estrategia" | "execucao" | "resultados
 
 type Lead = {
   id: string;
-  agendado_para: string | null;
   nome: string;
   whatsapp: string;
   tipo_negocio: string | null;
