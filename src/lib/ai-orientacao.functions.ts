@@ -165,7 +165,7 @@ export const generateAnalise = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const lead = await loadLead(context.supabase, data.leadId);
     if (!lead.diagnostico_ai) throw new Error("Gere o diagnóstico antes da análise.");
-    const json = await callAI({
+    const parsed = await callAIStructured({
       messages: [
         {
           role: "system",
@@ -208,11 +208,8 @@ export const generateAnalise = createServerFn({ method: "POST" })
         },
       ],
       tool_choice: { type: "function", function: { name: "entregar_analise" } },
-    });
-    const call = json.choices?.[0]?.message?.tool_calls?.[0];
-    if (!call) throw new Error("IA não retornou análise estruturada.");
-    const parsed = JSON.parse(call.function.arguments);
-    const oportunidades = parsed.oportunidades.map((o: any) => ({ ...o, selecionada: true }));
+    }, "entregar_analise");
+    const oportunidades = (parsed.oportunidades ?? []).map((o: any) => ({ ...o, selecionada: true }));
     const { error } = await context.supabase
       .from("leads")
       .update({ analise_ai: parsed.analise, oportunidades, stage: "analise" })
