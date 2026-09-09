@@ -1881,3 +1881,58 @@ function Textarea({
     />
   );
 }
+
+function buildWhatsAppExecucao(lead: Lead) {
+  const L: string[] = [];
+  L.push(`*PLANO DE EXECUÇÃO — ORIENTAMAIS*`);
+  L.push(`*Cliente:* ${lead.nome}`);
+  if (lead.tipo_negocio) L.push(`*Negócio:* ${lead.tipo_negocio}`);
+  L.push("");
+  const acoes = lead.plano_acoes ?? [];
+  if (acoes.length) {
+    L.push("*AÇÕES*");
+    acoes.forEach((a, i) => {
+      L.push(`${a.concluida ? "✅" : "▫️"} *${i + 1}. ${a.titulo}*`);
+      if (a.descricao) L.push(a.descricao);
+      L.push(`_Prazo:_ ${a.prazo} | _Responsável:_ ${a.responsavel} | _Prioridade:_ ${a.prioridade}`);
+      L.push("");
+    });
+  }
+  if (lead.execucao_notas) {
+    L.push("*OBSERVAÇÕES*");
+    L.push(lead.execucao_notas);
+    L.push("");
+  }
+  const feitas = acoes.filter((a) => a.concluida).length;
+  if (acoes.length) L.push(`*Progresso:* ${feitas}/${acoes.length} ações concluídas`);
+  return L.join("\n").trim();
+}
+
+function CopyWhatsAppButton({ lead }: { lead: Lead }) {
+  const [copiado, setCopiado] = useState(false);
+  const texto = buildWhatsAppExecucao(lead);
+  const copiar = async () => {
+    try {
+      await navigator.clipboard.writeText(texto);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = texto;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+    }
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2000);
+  };
+  return (
+    <button
+      type="button"
+      onClick={copiar}
+      className="w-full flex items-center justify-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-3 py-2.5 text-sm font-semibold text-primary hover:bg-primary/20 transition"
+    >
+      {copiado ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+      {copiado ? "Copiado!" : "Copiar tudo para WhatsApp"}
+    </button>
+  );
+}
