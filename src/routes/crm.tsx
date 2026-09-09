@@ -1670,6 +1670,7 @@ function LeadDrawer({
                   onChange={(v) => setDraft({ ...draft, execucao_notas: v })}
                 />
               </Field>
+              <CopyWhatsAppButton lead={draft} />
             </>
           )}
 
