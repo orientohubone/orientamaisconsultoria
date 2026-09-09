@@ -82,6 +82,51 @@ Objetivos organizacionais: ${l.objetivos_organizacionais ?? "—"}
 Anotações internas do consultor: ${l.anotacoes ?? "—"}`;
 }
 
+// Extrai os argumentos da tool call; se a IA responder em texto, tenta ler o JSON do conteúdo.
+function extractToolArgs(json: any, fnName: string): any {
+  const msg = json?.choices?.[0]?.message;
+  const call = msg?.tool_calls?.find((c: any) => c?.function?.name === fnName) ?? msg?.tool_calls?.[0];
+  const raw: string | undefined = call?.function?.arguments;
+  if (raw) {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      console.warn("[AI] argumentos inválidos", raw?.slice(0, 500));
+    }
+  }
+  const content: string | undefined = typeof msg?.content === "string" ? msg.content : undefined;
+  if (content) {
+    const match = content.match(/\{[\s\S]*\}/);
+    if (match) {
+      try {
+        return JSON.parse(match[0]);
+      } catch {
+        /* ignora */
+      }
+    }
+  }
+  const finish = json?.choices?.[0]?.finish_reason;
+  console.error("[AI] resposta sem tool call", JSON.stringify(json)?.slice(0, 1000));
+  throw new Error(
+    finish === "length"
+      ? "A IA excedeu o limite de resposta. Reduza o texto do diagnóstico e tente novamente."
+      : "A IA não retornou uma resposta estruturada. Tente novamente em instantes.",
+  );
+}
+
+async function callAIStructured(body: Record<string, unknown>, fnName: string) {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      return extractToolArgs(await callAI(body), fnName);
+    } catch (error) {
+      lastError = error;
+      console.warn(`[AI] tentativa ${attempt + 1} falhou para ${fnName}`, error);
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error("Falha ao consultar a IA.");
+}
+
 async function loadLead(supabase: any, leadId: string): Promise<Lead> {
   const { data, error } = await supabase.from("leads").select("*").eq("id", leadId).single();
   if (error || !data) throw new Error("Cliente não encontrado");
@@ -120,7 +165,7 @@ export const generateAnalise = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const lead = await loadLead(context.supabase, data.leadId);
     if (!lead.diagnostico_ai) throw new Error("Gere o diagnóstico antes da análise.");
-    const json = await callAI({
+    const parsed = await callAIStructured({
       messages: [
         {
           role: "system",
@@ -163,11 +208,8 @@ export const generateAnalise = createServerFn({ method: "POST" })
         },
       ],
       tool_choice: { type: "function", function: { name: "entregar_analise" } },
-    });
-    const call = json.choices?.[0]?.message?.tool_calls?.[0];
-    if (!call) throw new Error("IA não retornou análise estruturada.");
-    const parsed = JSON.parse(call.function.arguments);
-    const oportunidades = parsed.oportunidades.map((o: any) => ({ ...o, selecionada: true }));
+    }, "entregar_analise");
+    const oportunidades = (parsed.oportunidades ?? []).map((o: any) => ({ ...o, selecionada: true }));
     const { error } = await context.supabase
       .from("leads")
       .update({ analise_ai: parsed.analise, oportunidades, stage: "analise" })
@@ -184,7 +226,7 @@ export const generatePlano = createServerFn({ method: "POST" })
     const lead = await loadLead(context.supabase, data.leadId);
     const selecionadas = (lead.oportunidades ?? []).filter((o) => o.selecionada);
     if (selecionadas.length === 0) throw new Error("Selecione pelo menos uma oportunidade.");
-    const json = await callAI({
+    const parsed = await callAIStructured({
       messages: [
         {
           role: "system",
@@ -230,10 +272,7 @@ export const generatePlano = createServerFn({ method: "POST" })
         },
       ],
       tool_choice: { type: "function", function: { name: "entregar_plano" } },
-    });
-    const call = json.choices?.[0]?.message?.tool_calls?.[0];
-    if (!call) throw new Error("IA não retornou plano estruturado.");
-    const parsed = JSON.parse(call.function.arguments);
+    }, "entregar_plano");
     const { error } = await context.supabase
       .from("leads")
       .update({ plano_acoes: parsed.acoes, stage: "estrategia" })
@@ -248,7 +287,7 @@ export const suggestMetricas = createServerFn({ method: "POST" })
   .inputValidator((i: { leadId: string }) => z.object({ leadId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const lead = await loadLead(context.supabase, data.leadId);
-    const json = await callAI({
+    const parsed = await callAIStructured({
       messages: [
         {
           role: "system",
@@ -291,10 +330,7 @@ export const suggestMetricas = createServerFn({ method: "POST" })
         },
       ],
       tool_choice: { type: "function", function: { name: "entregar_metricas" } },
-    });
-    const call = json.choices?.[0]?.message?.tool_calls?.[0];
-    if (!call) throw new Error("IA não retornou métricas.");
-    const parsed = JSON.parse(call.function.arguments);
+    }, "entregar_metricas");
     const { error } = await context.supabase
       .from("leads")
       .update({ resultados_metricas: parsed.metricas, stage: "resultados" })
