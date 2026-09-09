@@ -26,6 +26,7 @@ import {
   Minimize2,
   GripVertical,
   Package,
+  Copy,
 } from "lucide-react";
 import {
   enrichDiagnostico,
