@@ -82,6 +82,51 @@ Objetivos organizacionais: ${l.objetivos_organizacionais ?? "—"}
 Anotações internas do consultor: ${l.anotacoes ?? "—"}`;
 }
 
+// Extrai os argumentos da tool call; se a IA responder em texto, tenta ler o JSON do conteúdo.
+function extractToolArgs(json: any, fnName: string): any {
+  const msg = json?.choices?.[0]?.message;
+  const call = msg?.tool_calls?.find((c: any) => c?.function?.name === fnName) ?? msg?.tool_calls?.[0];
+  const raw: string | undefined = call?.function?.arguments;
+  if (raw) {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      console.warn("[AI] argumentos inválidos", raw?.slice(0, 500));
+    }
+  }
+  const content: string | undefined = typeof msg?.content === "string" ? msg.content : undefined;
+  if (content) {
+    const match = content.match(/\{[\s\S]*\}/);
+    if (match) {
+      try {
+        return JSON.parse(match[0]);
+      } catch {
+        /* ignora */
+      }
+    }
+  }
+  const finish = json?.choices?.[0]?.finish_reason;
+  console.error("[AI] resposta sem tool call", JSON.stringify(json)?.slice(0, 1000));
+  throw new Error(
+    finish === "length"
+      ? "A IA excedeu o limite de resposta. Reduza o texto do diagnóstico e tente novamente."
+      : "A IA não retornou uma resposta estruturada. Tente novamente em instantes.",
+  );
+}
+
+async function callAIStructured(body: Record<string, unknown>, fnName: string) {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      return extractToolArgs(await callAI(body), fnName);
+    } catch (error) {
+      lastError = error;
+      console.warn(`[AI] tentativa ${attempt + 1} falhou para ${fnName}`, error);
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error("Falha ao consultar a IA.");
+}
+
 async function loadLead(supabase: any, leadId: string): Promise<Lead> {
   const { data, error } = await supabase.from("leads").select("*").eq("id", leadId).single();
   if (error || !data) throw new Error("Cliente não encontrado");
