@@ -226,7 +226,7 @@ export const generatePlano = createServerFn({ method: "POST" })
     const lead = await loadLead(context.supabase, data.leadId);
     const selecionadas = (lead.oportunidades ?? []).filter((o) => o.selecionada);
     if (selecionadas.length === 0) throw new Error("Selecione pelo menos uma oportunidade.");
-    const json = await callAI({
+    const parsed = await callAIStructured({
       messages: [
         {
           role: "system",
@@ -272,10 +272,7 @@ export const generatePlano = createServerFn({ method: "POST" })
         },
       ],
       tool_choice: { type: "function", function: { name: "entregar_plano" } },
-    });
-    const call = json.choices?.[0]?.message?.tool_calls?.[0];
-    if (!call) throw new Error("IA não retornou plano estruturado.");
-    const parsed = JSON.parse(call.function.arguments);
+    }, "entregar_plano");
     const { error } = await context.supabase
       .from("leads")
       .update({ plano_acoes: parsed.acoes, stage: "estrategia" })
@@ -290,7 +287,7 @@ export const suggestMetricas = createServerFn({ method: "POST" })
   .inputValidator((i: { leadId: string }) => z.object({ leadId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const lead = await loadLead(context.supabase, data.leadId);
-    const json = await callAI({
+    const parsed = await callAIStructured({
       messages: [
         {
           role: "system",
@@ -333,10 +330,7 @@ export const suggestMetricas = createServerFn({ method: "POST" })
         },
       ],
       tool_choice: { type: "function", function: { name: "entregar_metricas" } },
-    });
-    const call = json.choices?.[0]?.message?.tool_calls?.[0];
-    if (!call) throw new Error("IA não retornou métricas.");
-    const parsed = JSON.parse(call.function.arguments);
+    }, "entregar_metricas");
     const { error } = await context.supabase
       .from("leads")
       .update({ resultados_metricas: parsed.metricas, stage: "resultados" })
